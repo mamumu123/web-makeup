@@ -5,7 +5,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "潦草头像",
-  description: "创建一个潦草头像",
+  description: "创建一个潦草头像，各种奇怪的变化",
 };
 
 export default function RootLayout({
