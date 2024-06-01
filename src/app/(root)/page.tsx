@@ -38,7 +38,11 @@ export default function Home() {
         const { label, mask } = item;
         map[label] = mask;
       });
-      await saveAsset(nanoid(), map);
+      await saveAsset({
+        name: nanoid(),
+        data: map,
+        url: url,
+      });
       router.push('makeup');
     } catch (error) {
       console.error('onTry error', error)

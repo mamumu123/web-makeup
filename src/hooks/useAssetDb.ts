@@ -14,8 +14,16 @@ export const useAssetData = () => {
     const mediaName = useMemo(() => media?.name ?? null, [media]);
 
 
-    const saveAsset = async (name: string, data: any) => {
-        await db.files.put({ name, data })
+    const saveAsset = async ({
+        name,
+        data,
+        url,
+    }: {
+        name: string,
+        data: any,
+        url?: string,
+    }) => {
+        await db.files.put({ name, data, url })
     }
 
     return {

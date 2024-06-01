@@ -14,6 +14,7 @@ export interface FileData {
     id?: number;
     name: string;
     data: IData;
+    url?: string
 }
 
 export class FileDexie extends Dexie {
@@ -24,7 +25,7 @@ export class FileDexie extends Dexie {
     constructor() {
         super('myDatabase');
         this.version(1).stores({
-            files: '++id, name, data' // Primary key and indexed props
+            files: '++id, name, data, url' // Primary key and indexed props
         });
     }
 }

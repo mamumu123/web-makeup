@@ -35,7 +35,7 @@ export default function Page() {
             const { label, mask } = item;
             map[label] = mask;
         });
-        saveAsset(nanoid(), map);
+        saveAsset({ name: nanoid(), data: map });
     }
 
     useEffect(() => {
