@@ -1,11 +1,9 @@
-import Sidebar from '@/components/shared/Sidebar'
-
+import { GitHubAvatar } from '@/components/shared/gitHub';
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   return (
     <main className="root">
-      <Sidebar />
-
+      <GitHubAvatar />
       <div className="root-container">
         <div className="wrapper">
           {children}
