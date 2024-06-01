@@ -22,7 +22,7 @@ export default function Page() {
     const canvasBgRef = useRef<HTMLCanvasElement>(null);
     const canvasHairRef = useRef<HTMLCanvasElement>(null);
     const srcRef = useRef<HTMLImageElement>(null);
-    const { mediaData, saveAsset } = useAssetData()
+    const { mediaData, saveAsset } = useAssetData();
 
     const onStart = async () => {
         const segmenter = await pipeline('image-segmentation', 'Xenova/face-parsing');

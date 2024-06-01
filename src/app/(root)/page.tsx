@@ -8,6 +8,8 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { pipeline, env, ImageSegmentationPipeline } from '@xenova/transformers';
 import { nanoid } from "nanoid";
+import { useAssetData } from "@/hooks/useAssetDb";
+import { useRouter } from "next/navigation";
 
 env.allowLocalModels = false;
 
@@ -15,6 +17,10 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [ready, setReady] = useState(false);
   const segmenterRef = useRef<ImageSegmentationPipeline | null>(null)
+
+  const { saveAsset } = useAssetData();
+  const router = useRouter();
+
 
   const onTry = async (url: string) => {
     if (!segmenterRef.current) {
@@ -32,7 +38,8 @@ export default function Home() {
         const { label, mask } = item;
         map[label] = mask;
       });
-      saveAsset(nanoid(), map);
+      await saveAsset(nanoid(), map);
+      router.push('makeup');
     } catch (error) {
       console.error('onTry error', error)
     }
@@ -46,8 +53,6 @@ export default function Home() {
       setReady(true);
     }
     loadingModel();
-
-
   })
 
   return (
@@ -60,7 +65,7 @@ export default function Home() {
         <div className={'mt-5 mb-5'}>
           使用 examples 中的图片试试看
         </div>
-        <div className="flex flex-row w-full justify-center">
+        <div className="flex flex-row w-full justify-center gap-5">
           {EXAMPLES.map((item, index) => (
             <Card key={index} className={'w-[220px] h-[200px] relative'}>
               <div className={'w-[200] h-[200px] relative'}>
@@ -72,10 +77,6 @@ export default function Home() {
         </div>
       </div>
     </div>
-
   );
-}
-function saveAsset(arg0: string, map: any) {
-  throw new Error("Function not implemented.");
 }
 
