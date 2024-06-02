@@ -4,11 +4,10 @@ import { useAssetData } from '@/hooks/useAssetDb';
 import { Card } from 'flowbite-react';
 import { useEffect, useRef, useState } from 'react';
 import Image from "next/image";
-import { loaderProp } from '@/utils/image';
+import { Input } from "@/components/ui/input";
 import { BG_IMAGE, BG_TYPE } from '@/constants';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { Table } from "flowbite-react";
 import { changeHue, rgbToHsl } from '@/utils/color';
 import { cn } from '@/lib/utils';
@@ -40,8 +39,8 @@ export default function Home() {
 
     // console.log('mediaData', mediaData);
 
-    const ctx = canvasRef.current?.getContext('2d');
-    const ctxInit = canvasInitRef.current?.getContext('2d');
+    const ctx = canvasRef.current?.getContext('2d', { willReadFrequently: true });
+    const ctxInit = canvasInitRef.current?.getContext('2d', { willReadFrequently: true });
     if (!ctx || !ctxInit) {
       return
     }
@@ -175,7 +174,7 @@ export default function Home() {
           <div className='text-center'>原图</div>
           {
             media?.url && (
-              <Image ref={srcRef} src={media.url} width={512} height={512} alt='img' loader={loaderProp} onLoad={() => setLoadImage(true)} />
+              <Image ref={srcRef} src={media.url} width={512} height={512} alt='img' onLoad={() => setLoadImage(true)} priority />
             )}
         </Card>
         <Card className='flex-1 flex-col p-[6px] relative flex items-center justify-center'>
@@ -212,12 +211,12 @@ export default function Home() {
                 </Table.Cell>
                 <Table.Cell>
                   <div className={'flex items-center'}>
-                    {/* {(bgTypeHair === BG_TYPE.ONE) && ( */}
                     <div className={'w-[200px] flex justify-around items-center'}>
-                      <Label htmlFor="color" className={'text-nowrap'}>背景色</Label>
-                      <Input value={colorHair} onChange={(event) => setColorHair(event.target.value)} type="color"></Input>
+                      <Label htmlFor="colorHair" className={'text-nowrap'}>背景色</Label>
+                      {/* <input disabled={bgTypeHair !== BG_TYPE.ONE} value={colorHair} onChange={(e) => setColorHair(e.target.value)} type="color" id="colorHair" title="选择颜色" className="p-1 h-10 w-14 block bg-white border border-gray-200 cursor-pointer rounded-lg disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700"></input> */}
+                      <Input disabled={bgTypeHair !== BG_TYPE.ONE} value={colorHair} onChange={(event) => setColorHair(event.target.value)} type="color"></Input>
+
                     </div>
-                    {/* )} */}
                   </div>
                 </Table.Cell>
               </Table.Row>
@@ -239,12 +238,11 @@ export default function Home() {
                 </Table.Cell>
                 <Table.Cell>
                   <div className={'flex items-center'}>
-                    {/* {(bgTypeLip === BG_TYPE.ONE) && ( */}
                     <div className={'flex justify-around items-center w-[200px]'}>
-                      <Label htmlFor="color" className={'text-nowrap'}>背景色</Label>
-                      <Input value={colorLip} onChange={(event) => setColorLip(event.target.value)} type="color"></Input>
+                      <Label htmlFor="color-lip" className={'text-nowrap'}>背景色</Label>
+                      {/* <input disabled={bgTypeLip !== BG_TYPE.ONE} value={colorLip} onChange={(event) => setColorLip(event.target.value)} type="color" id="color-lip" title="选择颜色" className="p-1 h-10 w-14 block bg-white border border-gray-200 cursor-pointer rounded-lg disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700"></input> */}
+                      <Input disabled={bgTypeLip !== BG_TYPE.ONE} value={colorLip} onChange={(event) => setColorLip(event.target.value)} type="color" id='color-lip'></Input>
                     </div>
-                    {/* )} */}
                   </div>
                 </Table.Cell>
               </Table.Row>
@@ -277,8 +275,9 @@ export default function Home() {
                 <Table.Cell>
                   <div className={'flex items-center'}>
                     <div className={'w-[200px] flex justify-around items-center'}>
-                      <Label htmlFor="color" className={'text-nowrap'}>背景色</Label>
-                      <Input value={color} onChange={(event) => setColor(event.target.value)} type="color"></Input>
+                      <Label htmlFor="color-bg" className={'text-nowrap'}>背景色</Label>
+                      {/* <input disabled={bgType !== BG_TYPE.ONE} value={color} onChange={(event) => setColor(event.target.value)} type="color" id="color-bg" title="选择颜色" className="p-1 h-10 w-14 block bg-white border border-gray-200 cursor-pointer rounded-lg disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700"></input> */}
+                      <Input disabled={bgType !== BG_TYPE.ONE} value={color} onChange={(event) => setColor(event.target.value)} type="color"></Input>
                     </div>
                     <div className={'flex flex-1 items-center gap-5'}>
                       {BG_IMAGE.map((it, index) => (
@@ -290,7 +289,9 @@ export default function Home() {
                             src={it.url}
                             // @ts-ignore
                             ref={el => bgRefs.current[index] = el}
-                            layout='fill' objectFit='contain' alt='bg' />
+                            style={{ objectFit: 'contain', fill: 'contain' }}
+                            sizes="100%"
+                            fill alt='bg' />
                         </div>
                       ))}
                     </div>

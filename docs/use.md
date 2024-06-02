@@ -7,6 +7,8 @@ shadcn/ui
 https://ui.shadcn.com/docs/components/accordion
 
 
+https://preline.co/docs/color-picker.html
+
 tailwindcss
 https://www.tailwindcss.cn/docs/flex
 
