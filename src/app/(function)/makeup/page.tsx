@@ -21,35 +21,15 @@ export default function Home() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const [bgTypeHair, setBgTypeHair] = useState(BG_TYPE.OPACITY);
-  const onBgChangeHair = (value: BG_TYPE) => {
-    setBgTypeHair(value)
-  }
   const [colorHair, setColorHair] = useState('#000000');
-  const changeColorHair = (event: any) => {
-    setColorHair(event.target.value)
-  }
-
 
   const [bgTypeLip, setBgTypeLip] = useState(BG_TYPE.OPACITY);
-  const onBgChangeLip = (value: BG_TYPE) => {
-    setBgTypeLip(value)
-  }
   const [colorLip, setColorLip] = useState('#000000');
-  const changeColorLip = (event: any) => {
-    setColorLip(event.target.value)
-  }
 
   const [bgType, setBgType] = useState(BG_TYPE.RANDOM);
-  const onBgChange = (value: BG_TYPE) => {
-    setBgType(value)
-  }
   const [color, setColor] = useState('#000000');
-  const changeColor = (event: any) => {
-    setColor(event.target.value)
-  }
 
   useEffect(() => {
-
     if (mediaData && loadImage) {
       if (!canvasRef.current) {
         console.log('canvasHairRef.current', canvasRef.current);
@@ -166,20 +146,24 @@ export default function Home() {
     color, bgType
   ]);
 
-
   return (
-    <div className={`flex h-full width-full  gap-10`}>
-      <Card className=' flex-col p-[6px]'>
-        <div className='flex w-[512px] h-[512px] relative'>
+    <div className={`flex h-full width-full  gap-10 flex-col`}>
+      <div className='flex p-[6px] relative width-full  h-[600px] justify-between'>
+        <Card className='flex-1 flex-col p-[6px] relative flex items-center justify-center'>
+          <div className='text-center'>原图</div>
           {
             media?.url && (
               <Image ref={srcRef} src={media.url} width={512} height={512} alt='img' loader={loaderProp} onLoad={() => setLoadImage(true)} />
             )}
-        </div>
-      </Card>
-      <Card className='flex flex-1'>
-        <canvas width={512} height={512} ref={canvasRef} className={'w-[512px] h-[512px]'}></canvas>
-        <div className={'flex'}>
+        </Card>
+        <Card className='flex-1 flex-col p-[6px] relative flex items-center justify-center'>
+          <div className='text-center'>效果图</div>
+          <canvas width={512} height={512} ref={canvasRef} className={'w-[512px] h-[512px]'}></canvas>
+        </Card>
+      </div>
+      <div className='width-full flex-1'>
+        <Card className='flex flex-1'>
+          {/* <div className={'flex'}> */}
           <Table>
             <Table.Head>
               <Table.HeadCell>修改项</Table.HeadCell>
@@ -192,7 +176,7 @@ export default function Home() {
                   {'头发颜色'}
                 </Table.Cell>
                 <Table.Cell>
-                  <RadioGroup value={bgTypeHair} onValueChange={onBgChangeHair}>
+                  <RadioGroup value={bgTypeHair} onValueChange={(it: BG_TYPE) => setBgTypeHair(it)}>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="opacity" id="opacity" />
                       <Label htmlFor="opacity">默认颜色</Label>
@@ -208,7 +192,7 @@ export default function Home() {
                     (bgTypeHair === BG_TYPE.ONE) && (
                       <div className={'flex justify-around items-center'}>
                         <Label htmlFor="color" className={'text-nowrap'}>背景色</Label>
-                        <Input value={colorHair} onChange={changeColorHair} type="color"></Input>
+                        <Input value={colorHair} onChange={(event) => setColorHair(event.target.value)} type="color"></Input>
                       </div>
                     )}
                   </div>
@@ -219,7 +203,7 @@ export default function Home() {
                   {'口红颜色'}
                 </Table.Cell>
                 <Table.Cell>
-                  <RadioGroup value={bgTypeLip} onValueChange={onBgChangeLip}>
+                  <RadioGroup value={bgTypeLip} onValueChange={(value: BG_TYPE) => setBgTypeLip(value)}>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="opacity" id="opacity" />
                       <Label htmlFor="opacity">默认颜色</Label>
@@ -235,7 +219,7 @@ export default function Home() {
                     (bgTypeLip === BG_TYPE.ONE) && (
                       <div className={'flex justify-around items-center'}>
                         <Label htmlFor="color" className={'text-nowrap'}>背景色</Label>
-                        <Input value={colorLip} onChange={changeColorLip} type="color"></Input>
+                        <Input value={colorLip} onChange={(event) => setColorLip(event.target.value)} type="color"></Input>
                       </div>
                     )}
                   </div>
@@ -247,10 +231,10 @@ export default function Home() {
                 </Table.Cell>
                 <Table.Cell>
                   <div >
-                    <RadioGroup value={bgType} onValueChange={onBgChange}>
+                    <RadioGroup value={bgType} onValueChange={(value: BG_TYPE) => setBgType(value)}>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="random" id="random" />
-                        <Label htmlFor="random">背景图</Label>
+                        <Label htmlFor="random">原始背景</Label>
                       </div>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="one" id="one" />
@@ -268,17 +252,16 @@ export default function Home() {
                     (bgType === BG_TYPE.ONE) && (
                       <div className={'flex justify-around items-center'}>
                         <Label htmlFor="color" className={'text-nowrap'}>背景色</Label>
-                        <Input value={color} onChange={changeColor} type="color"></Input>
+                        <Input value={color} onChange={(event) => setColor(event.target.value)} type="color"></Input>
                       </div>
                     )}
                 </Table.Cell>
               </Table.Row>
             </Table.Body>
           </Table>
-
-        </div >
-
-      </Card>
+          {/* </div > */}
+        </Card>
+      </div>
     </div>
   );
 }
