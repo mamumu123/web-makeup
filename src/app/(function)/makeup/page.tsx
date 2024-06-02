@@ -10,7 +10,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Table } from "flowbite-react";
-import ColorLib from 'color';
+import { changeHue, rgbToHsl } from '@/utils/color';
 
 export default function Home() {
   const srcRef = useRef<HTMLImageElement>(null);
@@ -30,116 +30,113 @@ export default function Home() {
   const [color, setColor] = useState('#000000');
 
   useEffect(() => {
-    if (mediaData && loadImage) {
-      if (!canvasRef.current) {
-        console.log('canvasHairRef.current', canvasRef.current);
-        return
-      }
-
-      console.log('mediaData', mediaData);
-
-      const ctx = canvasRef.current?.getContext('2d');
-      if (!ctx) {
-        return
-      }
-
-      const {
-        hair
-      } = mediaData || {};
-      const { data, width, height } = hair;
-
-      canvasRef.current.width = width;
-      canvasRef.current.height = height;
-      ctx.drawImage(srcRef.current!, 0, 0, width, height);
-
-      const imageData = ctx.getImageData(0, 0, width, height);
-
-
-      const {
-        background
-      } = mediaData || {};
-      const { data: dataBg } = background;
-
-
-      if (bgType === BG_TYPE.OPACITY) {
-        for (let index = 0; index < dataBg.length; index++) {
-          const point = dataBg[index];
-          if (point !== 0) {
-            imageData.data[index * 4 + 3] = 0;
-          }
-        }
-      }
-
-      if (bgType === BG_TYPE.ONE) {
-        for (let index = 0; index < dataBg.length; index++) {
-          const point = dataBg[index];
-          if (point !== 0) {
-            const r = parseInt(color.slice(1, 3), 16);
-            const g = parseInt(color.slice(3, 5), 16);
-            const b = parseInt(color.slice(5, 7), 16);
-            imageData.data[index * 4 + 0] = r;
-            imageData.data[index * 4 + 1] = g;
-            imageData.data[index * 4 + 2] = b;
-          }
-        }
-      }
-
-      if (bgTypeHair === BG_TYPE.ONE) {
-        const color = colorHair;
-        const r = parseInt(color.slice(1, 3), 16);
-        const g = parseInt(color.slice(3, 5), 16);
-        const b = parseInt(color.slice(5, 7), 16);
-        const colorNew = ColorLib.rgb([r, g, b]);
-
-        const newHue = colorNew.hue();
-        for (let index = 0; index < data.length; index++) {
-          const point = data[index];
-          if (point !== 0) {
-
-            const colorOrigin = ColorLib.rgb([imageData.data[index * 4], imageData.data[index * 4 + 1], imageData.data[index * 4 + 2]]);
-            const hue = colorOrigin.hue();
-
-            const newColor = colorOrigin.hue(hue + newHue).rgb().array();
-            imageData.data[index * 4 + 0] = newColor[0];
-            imageData.data[index * 4 + 1] = newColor[1];
-            imageData.data[index * 4 + 2] = newColor[2];
-          }
-        }
-      }
-
-      const {
-        l_lip: lowLip,
-        u_lip: upLip,
-      } = mediaData || {};
-      const { data: dataLowLip } = lowLip;
-      const { data: dataUpLip } = upLip;
-
-      if (bgTypeLip === BG_TYPE.ONE) {
-        const color = colorLip;
-        const r = parseInt(color.slice(1, 3), 16);
-        const g = parseInt(color.slice(3, 5), 16);
-        const b = parseInt(color.slice(5, 7), 16);
-        const colorNew = ColorLib.rgb([r, g, b]);
-
-        const newHue = colorNew.hue();
-        for (let index = 0; index < data.length; index++) {
-          const pointLow = dataLowLip[index];
-          const pointUp = dataUpLip[index];
-          if (pointLow !== 0 || pointUp !== 0) {
-            const colorOrigin = ColorLib.rgb([imageData.data[index * 4], imageData.data[index * 4 + 1], imageData.data[index * 4 + 2]]);
-            const hue = colorOrigin.hue();
-            const newColor = colorOrigin.hue(hue + newHue).rgb().array();
-            imageData.data[index * 4 + 0] = newColor[0];
-            imageData.data[index * 4 + 1] = newColor[1];
-            imageData.data[index * 4 + 2] = newColor[2];
-          }
-
-        }
-      }
-
-      ctx.putImageData(imageData, 0, 0);
+    if (!mediaData || !loadImage || !canvasRef.current) {
+      return;
     }
 
+    console.log('mediaData', mediaData);
+
+    const ctx = canvasRef.current?.getContext('2d');
+    if (!ctx) {
+      return
+    }
+
+    const {
+      background, hair,
+      l_lip: lowLip,
+      u_lip: upLip,
+    } = mediaData || {};
+    const {
+      data: dataBg,
+      width,
+      height,
+
+    } = background;
+
+    const { data: dataHair } = hair;
+
+    canvasRef.current.width = width;
+    canvasRef.current.height = height;
+    ctx.drawImage(srcRef.current!, 0, 0, width, height);
+
+    const imageData = ctx.getImageData(0, 0, width, height);
+    const { data } = imageData || {};
+
+    if (bgType === BG_TYPE.OPACITY) {
+      for (let index = 0; index < dataBg.length; index++) {
+        if (dataBg[index] !== 0) {
+          imageData.data[index * 4 + 3] = 0;
+        }
+      }
+    }
+
+    if (bgType === BG_TYPE.ONE) {
+      for (let index = 0; index < dataBg.length; index++) {
+        if (dataBg[index] !== 0) {
+          const r = parseInt(color.slice(1, 3), 16);
+          const g = parseInt(color.slice(3, 5), 16);
+          const b = parseInt(color.slice(5, 7), 16);
+          // 这个比较太慢了
+          // const rgb = ColorLib(color).rgb().array();
+          // const [r, g, b] = rgb;
+          data[index * 4 + 0] = r;
+          data[index * 4 + 1] = g;
+          data[index * 4 + 2] = b;
+        }
+      }
+    }
+
+    if (bgTypeHair === BG_TYPE.ONE) {
+      const color = colorHair;
+      const r = parseInt(color.slice(1, 3), 16);
+      const g = parseInt(color.slice(3, 5), 16);
+      const b = parseInt(color.slice(5, 7), 16);
+      const hsl = rgbToHsl(r, g, b);
+      const newHue = hsl[0];
+
+      const data = dataHair;
+      for (let index = 0; index < data.length; index++) {
+        if (data[index] !== 0) {
+
+          const newColor = changeHue([
+            imageData.data[index * 4],
+            imageData.data[index * 4 + 1],
+            imageData.data[index * 4 + 2],
+          ], newHue)
+          imageData.data[index * 4 + 0] = newColor[0];
+          imageData.data[index * 4 + 1] = newColor[1];
+          imageData.data[index * 4 + 2] = newColor[2];
+        }
+      }
+    }
+
+
+    const { data: dataLowLip } = lowLip;
+    const { data: dataUpLip } = upLip;
+
+    if (bgTypeLip === BG_TYPE.ONE) {
+      const color = colorLip;
+      const r = parseInt(color.slice(1, 3), 16);
+      const g = parseInt(color.slice(3, 5), 16);
+      const b = parseInt(color.slice(5, 7), 16);
+      const hsl = rgbToHsl(r, g, b);
+      const newHue = hsl[0];
+
+      const data = dataHair;
+      for (let index = 0; index < data.length; index++) {
+        if (dataLowLip[index] !== 0 || dataUpLip[index] !== 0) {
+          const newColor = changeHue([
+            imageData.data[index * 4],
+            imageData.data[index * 4 + 1],
+            imageData.data[index * 4 + 2],
+          ], newHue);
+          imageData.data[index * 4 + 0] = newColor[0];
+          imageData.data[index * 4 + 1] = newColor[1];
+          imageData.data[index * 4 + 2] = newColor[2];
+        }
+      }
+    }
+    ctx.putImageData(imageData, 0, 0);
   }, [mediaData, loadImage,
     bgTypeHair, colorHair,
     colorLip, bgTypeLip,
