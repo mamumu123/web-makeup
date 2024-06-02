@@ -5,12 +5,13 @@ import { Card } from 'flowbite-react';
 import { useEffect, useRef, useState } from 'react';
 import Image from "next/image";
 import { loaderProp } from '@/utils/image';
-import { BG_TYPE } from '@/constants';
+import { BG_IMAGE, BG_TYPE } from '@/constants';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Table } from "flowbite-react";
 import { changeHue, rgbToHsl } from '@/utils/color';
+import { cn } from '@/lib/utils';
 
 export default function Home() {
   const srcRef = useRef<HTMLImageElement>(null);
@@ -19,25 +20,29 @@ export default function Home() {
   const [loadImage, setLoadImage] = useState(false);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const canvasInitRef = useRef<HTMLCanvasElement>(null);
 
   const [bgTypeHair, setBgTypeHair] = useState(BG_TYPE.OPACITY);
-  const [colorHair, setColorHair] = useState('#000000');
+  const [colorHair, setColorHair] = useState('#FFFFFF');
 
   const [bgTypeLip, setBgTypeLip] = useState(BG_TYPE.OPACITY);
-  const [colorLip, setColorLip] = useState('#000000');
+  const [colorLip, setColorLip] = useState('#FFFFFF');
 
-  const [bgType, setBgType] = useState(BG_TYPE.RANDOM);
-  const [color, setColor] = useState('#000000');
+  const [bgType, setBgType] = useState(BG_TYPE.INIT);
+  const [color, setColor] = useState('#FFFFFF');
+  const [bgIndex, setBgIndex] = useState(0);
+  const bgRefs = useRef<any[]>([]);
 
   useEffect(() => {
-    if (!mediaData || !loadImage || !canvasRef.current) {
+    if (!mediaData || !loadImage || !canvasRef.current || !canvasInitRef.current) {
       return;
     }
 
-    console.log('mediaData', mediaData);
+    // console.log('mediaData', mediaData);
 
     const ctx = canvasRef.current?.getContext('2d');
-    if (!ctx) {
+    const ctxInit = canvasInitRef.current?.getContext('2d');
+    if (!ctx || !ctxInit) {
       return
     }
 
@@ -58,9 +63,13 @@ export default function Home() {
     canvasRef.current.width = width;
     canvasRef.current.height = height;
     ctx.drawImage(srcRef.current!, 0, 0, width, height);
+    let imageData = ctx.getImageData(0, 0, width, height);
+    let { data } = imageData || {};
 
-    const imageData = ctx.getImageData(0, 0, width, height);
-    const { data } = imageData || {};
+    canvasInitRef.current.width = width;
+    canvasInitRef.current.height = height;
+    ctxInit.drawImage(srcRef.current!, 0, 0, width, height);
+    let imageDataInit = ctxInit.getImageData(0, 0, width, height);
 
     if (bgType === BG_TYPE.OPACITY) {
       for (let index = 0; index < dataBg.length; index++) {
@@ -82,6 +91,22 @@ export default function Home() {
           data[index * 4 + 0] = r;
           data[index * 4 + 1] = g;
           data[index * 4 + 2] = b;
+        }
+      }
+    }
+
+    if (bgType === BG_TYPE.IMAGE && bgRefs.current?.[bgIndex]) {
+
+      // 画背景
+      ctx.drawImage(bgRefs.current?.[bgIndex], 0, 0, width, height);
+      imageData = ctx.getImageData(0, 0, width, height);
+      data = imageData.data || {};
+
+      for (let index = 0; index < dataBg.length; index++) {
+        if (dataBg[index] === 0) {
+          imageData.data[index * 4 + 0] = imageDataInit.data[index * 4 + 0];
+          imageData.data[index * 4 + 1] = imageDataInit.data[index * 4 + 1];
+          imageData.data[index * 4 + 2] = imageDataInit.data[index * 4 + 2];
         }
       }
     }
@@ -113,7 +138,6 @@ export default function Home() {
 
     const { data: dataLowLip } = lowLip;
     const { data: dataUpLip } = upLip;
-
     if (bgTypeLip === BG_TYPE.ONE) {
       const color = colorLip;
       const r = parseInt(color.slice(1, 3), 16);
@@ -140,7 +164,7 @@ export default function Home() {
   }, [mediaData, loadImage,
     bgTypeHair, colorHair,
     colorLip, bgTypeLip,
-    color, bgType
+    color, bgType, bgIndex
   ]);
 
   return (
@@ -157,6 +181,7 @@ export default function Home() {
         <Card className='flex-1 flex-col p-[6px] relative flex items-center justify-center'>
           <div className='text-center'>效果图</div>
           <canvas width={512} height={512} ref={canvasRef} className={'w-[512px] h-[512px]'}></canvas>
+          <canvas width={512} height={512} ref={canvasInitRef} className={'w-[512px] h-[512px] hidden absolute'}></canvas>
         </Card>
       </div>
       <div className='width-full flex-1'>
@@ -186,13 +211,13 @@ export default function Home() {
                   </RadioGroup>
                 </Table.Cell>
                 <Table.Cell>
-                  <div className={'w-[200px] ml-[48px]'}>{
-                    (bgTypeHair === BG_TYPE.ONE) && (
-                      <div className={'flex justify-around items-center'}>
-                        <Label htmlFor="color" className={'text-nowrap'}>背景色</Label>
-                        <Input value={colorHair} onChange={(event) => setColorHair(event.target.value)} type="color"></Input>
-                      </div>
-                    )}
+                  <div className={'flex items-center'}>
+                    {/* {(bgTypeHair === BG_TYPE.ONE) && ( */}
+                    <div className={'w-[200px] flex justify-around items-center'}>
+                      <Label htmlFor="color" className={'text-nowrap'}>背景色</Label>
+                      <Input value={colorHair} onChange={(event) => setColorHair(event.target.value)} type="color"></Input>
+                    </div>
+                    {/* )} */}
                   </div>
                 </Table.Cell>
               </Table.Row>
@@ -213,13 +238,13 @@ export default function Home() {
                   </RadioGroup>
                 </Table.Cell>
                 <Table.Cell>
-                  <div className={'w-[200px] ml-[48px]'}>{
-                    (bgTypeLip === BG_TYPE.ONE) && (
-                      <div className={'flex justify-around items-center'}>
-                        <Label htmlFor="color" className={'text-nowrap'}>背景色</Label>
-                        <Input value={colorLip} onChange={(event) => setColorLip(event.target.value)} type="color"></Input>
-                      </div>
-                    )}
+                  <div className={'flex items-center'}>
+                    {/* {(bgTypeLip === BG_TYPE.ONE) && ( */}
+                    <div className={'flex justify-around items-center w-[200px]'}>
+                      <Label htmlFor="color" className={'text-nowrap'}>背景色</Label>
+                      <Input value={colorLip} onChange={(event) => setColorLip(event.target.value)} type="color"></Input>
+                    </div>
+                    {/* )} */}
                   </div>
                 </Table.Cell>
               </Table.Row>
@@ -231,28 +256,45 @@ export default function Home() {
                   <div >
                     <RadioGroup value={bgType} onValueChange={(value: BG_TYPE) => setBgType(value)}>
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="random" id="random" />
-                        <Label htmlFor="random">原始背景</Label>
+                        <RadioGroupItem value={BG_TYPE.INIT} id={BG_TYPE.INIT} />
+                        <Label htmlFor={BG_TYPE.INIT}>原始背景</Label>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="one" id="one" />
-                        <Label htmlFor="one">颜色背景</Label>
+                        <RadioGroupItem value={BG_TYPE.ONE} id={BG_TYPE.ONE} />
+                        <Label htmlFor={BG_TYPE.ONE}>颜色背景</Label>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="opacity" id="opacity" />
-                        <Label htmlFor="opacity">透明背景</Label>
+                        <RadioGroupItem value={BG_TYPE.OPACITY} id={BG_TYPE.OPACITY} />
+                        <Label htmlFor={BG_TYPE.OPACITY}>透明背景</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value={BG_TYPE.IMAGE} id={BG_TYPE.IMAGE} />
+                        <Label htmlFor={BG_TYPE.IMAGE}>图片背景</Label>
                       </div>
                     </RadioGroup>
                   </div >
                 </Table.Cell>
                 <Table.Cell>
-                  {
-                    (bgType === BG_TYPE.ONE) && (
-                      <div className={'flex justify-around items-center'}>
-                        <Label htmlFor="color" className={'text-nowrap'}>背景色</Label>
-                        <Input value={color} onChange={(event) => setColor(event.target.value)} type="color"></Input>
-                      </div>
-                    )}
+                  <div className={'flex items-center'}>
+                    <div className={'w-[200px] flex justify-around items-center'}>
+                      <Label htmlFor="color" className={'text-nowrap'}>背景色</Label>
+                      <Input value={color} onChange={(event) => setColor(event.target.value)} type="color"></Input>
+                    </div>
+                    <div className={'flex flex-1 items-center gap-5'}>
+                      {BG_IMAGE.map((it, index) => (
+                        <div
+                          key={it.url}
+                          onClick={() => setBgIndex(index)}
+                          className={cn('w-[100px] h-[100px] relative border-[5px] rounded-md', bgIndex === index ? 'border-teal-300' : '')}>
+                          <Image
+                            src={it.url}
+                            // @ts-ignore
+                            ref={el => bgRefs.current[index] = el}
+                            layout='fill' objectFit='contain' alt='bg' />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </Table.Cell>
               </Table.Row>
             </Table.Body>
