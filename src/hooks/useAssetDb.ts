@@ -8,7 +8,7 @@ export const useAssetData = () => {
         () => db.files?.toArray?.()
     );
 
-    const media = useMemo(() => mediaList?.length ? mediaList[0] : null, [mediaList])
+    const media = useMemo(() => mediaList?.length ? mediaList.at(-1) : null, [mediaList])
 
     const mediaData = useMemo(() => media?.data ?? null, [media]);
     const mediaName = useMemo(() => media?.name ?? null, [media]);

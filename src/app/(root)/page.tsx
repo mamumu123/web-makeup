@@ -52,7 +52,7 @@ export default function Home() {
 
   useEffect(() => {
     async function loadingModel() {
-      const segmenter = await pipeline('image-segmentation', 'Xenova/face-parsing');
+      const segmenter = await pipeline('image-segmentation', 'jonathandinu/face-parsing');
       segmenterRef.current = segmenter;
       setReady(true);
     }
@@ -60,7 +60,8 @@ export default function Home() {
   })
 
   return (
-    <div className={`flex min-h-screen flex-col w-full p-2 `}>
+    <div className={`flex min-h-screen flex-col w-full p-2 bg-rose-200`}>
+      <div className='font-bold text-4xl text-center text-black mb-10'>在线变装</div>
       <div className="w-full h-[50%] flex flex-col items-center">
         <h2 className="mb-4">上传一张人像照片，就可以开始神奇变化</h2>
         <div className={'w-[60%]'}>
@@ -73,7 +74,7 @@ export default function Home() {
           {EXAMPLES.map((item, index) => (
             <Card key={index} className={'w-[220px] h-[200px] relative'}>
               <div className={'w-[200] h-[200px] relative'}>
-                <Image layout='fill' objectFit='contain' src={item.url} alt='img' loader={loaderProp} />
+                <Image fill style={{ objectFit: 'contain', fill: 'contain' }} src={item.url} alt='img' loader={loaderProp} />
               </div>
               <Button disabled={loading || !ready} onClick={() => onTry(item.url)}> 试一下 </Button>
             </Card>

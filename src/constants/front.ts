@@ -14,10 +14,13 @@ export const FAV_ICON = 'https://github.githubassets.com/favicons/favicon.svg';
 
 export const EXAMPLES = [
     {
-        url: '/a.png',
+        url: '/examples/a.png',
     },
     {
-        url: '/a.png',
+        url: '/examples/b.png',
+    },
+    {
+        url: '/examples/c.png',
     }
 ]
 

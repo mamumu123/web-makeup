@@ -1,4 +1,5 @@
 import { GitHubAvatar } from '@/components/shared/gitHub';
+// import SideBar from '@/components/shared/Sidebar'
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   return (

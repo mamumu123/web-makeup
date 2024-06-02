@@ -37,7 +37,7 @@ export default function Home() {
       return;
     }
 
-    // console.log('mediaData', mediaData);
+    console.log('mediaData', mediaData);
 
     const ctx = canvasRef.current?.getContext('2d', { willReadFrequently: true });
     const ctxInit = canvasInitRef.current?.getContext('2d', { willReadFrequently: true });
