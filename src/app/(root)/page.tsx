@@ -74,7 +74,7 @@ export default function Home() {
           {EXAMPLES.map((item, index) => (
             <Card key={index} className={'w-[220px] h-[200px] relative'}>
               <div className={'w-[200] h-[200px] relative'}>
-                <Image fill style={{ objectFit: 'contain', fill: 'contain' }} src={item.url} alt='img' loader={loaderProp} />
+                <Image fill style={{ objectFit: 'contain', fill: 'contain' }} src={item.url} alt='img' loader={loaderProp} priority />
               </div>
               <Button disabled={loading || !ready} onClick={() => onTry(item.url)}> 试一下 </Button>
             </Card>

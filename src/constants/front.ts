@@ -21,6 +21,12 @@ export const EXAMPLES = [
     },
     {
         url: '/examples/c.png',
+    },
+    {
+        url: '/examples/d.png',
+    },
+    {
+        url: '/examples/e.png',
     }
 ]
 
