@@ -145,7 +145,8 @@ export default function Home() {
 
   return (
     <div className={`flex h-full width-full  gap-10 flex-col`}>
-      <div className='flex p-[6px] relative width-full  h-[600px] justify-between'>
+      <div className='font-bold text-4xl text-center text-black'>在线变装</div>
+      <div className='flex p-[6px] relative width-full  h-[600px] justify-between gap-10'>
         <Card className='flex-1 flex-col p-[6px] relative flex items-center justify-center'>
           <div className='text-center'>原图</div>
           {

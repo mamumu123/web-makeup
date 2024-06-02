@@ -2,6 +2,8 @@ export enum BG_TYPE {
     RANDOM = 'random',
     ONE = 'one',
     OPACITY = 'opacity',
+    INIT = 'init',
+    IMAGE = 'image',
 }
 
 export const API_FACE = `/api/face`;
@@ -17,4 +19,16 @@ export const EXAMPLES = [
     {
         url: '/a.png',
     }
+]
+
+export const BG_IMAGE = [
+    {
+        url: '/bg/green.png',
+    },
+    {
+        url: '/bg/white.png',
+    },
+    {
+        url: '/bg/red.png',
+    },
 ]
