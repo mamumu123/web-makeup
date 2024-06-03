@@ -28,16 +28,25 @@ export default function Home() {
 
   const [demoIndex, setDemoIndex] = useState(0);
 
+  const [exampleState, setExampleState] = useState(EXAMPLES);
+
   const imageDataResult = useMemo(() => {
     // TODO: if userUpload then
-    return EXAMPLES[demoIndex];
-  }, [demoIndex])
+    return exampleState[demoIndex];
+  }, [demoIndex, exampleState])
 
 
   const [loading, setLoading] = useState(false);
   const [ready, setReady] = useState(false);
   const segmenterRef = useRef<ImageSegmentationPipeline | null>(null)
 
+  const handleClickDemo = async (index: number) => {
+    const demo = exampleState[index];
+    if (!demo.data) {
+      await onTryDemo(index);
+    }
+    setDemoIndex(index);
+  }
 
   useEffect(() => {
     async function loadingModel() {
@@ -48,19 +57,26 @@ export default function Home() {
     loadingModel();
   })
 
-  const onTry = async () => {
+  const onTryDemo = async (index: number) => {
     if (!segmenterRef.current) {
       console.error('segmenter failed')
       return
     }
     setLoading(true);
-    const { url } = imageDataResult;
+    const { url } = exampleState[index];
     try {
-
       const output = await segmenterRef.current(url);
       console.log('output end', output);
       const result = formatData(output);
-      console.log('result', result);
+
+      setExampleState((prev: any) => ({
+        ...prev,
+        [index]: {
+          ...prev[index],
+          data: result,
+        }
+      }))
+
       // const map: any = {}
       // Object.keys(output).forEach((key: any) => {
       //   const item = output[key];
@@ -74,7 +90,6 @@ export default function Home() {
       //   data: map,
       //   url: url,
       // });
-      // router.push('makeup');
     } catch (error) {
       console.error('onTry error', error)
     }
@@ -198,15 +213,15 @@ export default function Home() {
             imageDataResult?.url && (
               <Image className={'absolute opacity-0 pointer-events-none'} ref={srcRef} src={imageDataResult.url} width={imageDataResult.width} height={imageDataResult.height} alt='img' onLoad={() => setLoadImage(true)} priority />
             )}
-          <Button onClick={onTry} disabled={!ready || loading} >
+          {/* <Button onClick={() => onTryDemo(index)} disabled={!ready || loading} >
             生成数据
-          </Button>
+          </Button> */}
           <div>试试 demo </div>
           <div className='h-[100px] w-full flex  items-center gap-5 justify-start overflow-x-auto '>
-            {EXAMPLES.map((it, index) => (
+            {exampleState.map((it, index) => (
               <div
                 key={it.url}
-                onClick={() => setDemoIndex(index)}
+                onClick={() => handleClickDemo(index)}
                 className={cn('w-[100px] h-[100px] relative border-[5px] rounded-md', demoIndex === index ? 'border-teal-300' : '')}>
                 <Image
                   src={it.url}
