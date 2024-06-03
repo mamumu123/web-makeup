@@ -45,7 +45,7 @@ export default function Home() {
       segmenterRef.current = segmenter;
       setReady(true);
     }
-    // loadingModel();
+    loadingModel();
   })
 
   const onTry = async () => {
@@ -93,7 +93,7 @@ export default function Home() {
   // const bgRefs = useRef<any[]>([]);
 
   useEffect(() => {
-    if (!canvasRef.current || !canvasInitRef.current || !loadImage) {
+    if (!canvasRef.current || !canvasInitRef.current || !loadImage || !imageDataResult.data) {
       return;
     }
 
@@ -103,18 +103,10 @@ export default function Home() {
       return
     }
 
-    const { width, height, url } = imageDataResult;
+    const { width, height, url, data: resultData } = imageDataResult;
     if (!width || !height || !url) {
       return
     }
-    let resultData;
-    try {
-      resultData = JSON.parse(imageDataResult.data!);
-    } catch (error) {
-      console.error('error', error)
-    }
-
-    console.log('resultData', resultData);
 
     // const {
     //   background, hair,
