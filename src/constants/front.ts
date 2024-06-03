@@ -12,24 +12,6 @@ export const GIT_REPO = 'https://github.com/mamumu123/avatar-change';
 
 export const FAV_ICON = 'https://github.githubassets.com/favicons/favicon.svg';
 
-export const EXAMPLES = [
-    {
-        url: '/examples/a.png',
-    },
-    {
-        url: '/examples/b.png',
-    },
-    {
-        url: '/examples/c.png',
-    },
-    {
-        url: '/examples/d.png',
-    },
-    {
-        url: '/examples/e.png',
-    }
-]
-
 export const BG_IMAGE = [
     {
         url: '/bg/green.png',

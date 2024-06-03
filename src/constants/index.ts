@@ -42,3 +42,4 @@ export const navLinks = [
 ];
 
 export * from './front';
+export * from './examples';
