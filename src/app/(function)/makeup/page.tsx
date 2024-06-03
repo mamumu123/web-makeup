@@ -2,7 +2,7 @@
 
 // import { useAssetData } from '@/hooks/useAssetDb';
 import { Button, Card } from 'flowbite-react';
-import { useEffect, useRef, useState, useMemo } from 'react';
+import { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import {
@@ -20,6 +20,55 @@ env.allowLocalModels = false;
 export default function Home() {
   const srcRef = useRef<HTMLImageElement>(null);
   // const { mediaData, media } = useAssetData();
+  const [ready, setReady] = useState(false);
+
+  // // Create a reference to the worker object.
+  // const worker = useRef<Worker>(null);
+
+  // // Keep track of the classification result and the model loading status.
+  // const [result, setResult] = useState(null);
+  // const [ready, setReady] = useState(false);
+
+  // // We use the `useEffect` hook to set up the worker as soon as the `App` component is mounted.
+  // useEffect(() => {
+  //   if (worker.current) {
+  //     return
+  //   }
+  //   // Create the worker if it does not yet exist.
+  //   // @ts-ignore
+  //   worker.current = new Worker(new URL('./worker.js', import.meta.url), {
+  //     type: 'module'
+  //   });
+
+  //   if (!worker.current) { return }
+
+  //   // Create a callback function for messages from the worker thread.
+  //   const onMessageReceived = (e: MessageEvent) => {
+  //     switch (e.data.status) {
+  //       case 'initiate':
+  //         setReady(false);
+  //         break;
+  //       case 'ready':
+  //         setReady(true);
+  //         break;
+  //       case 'complete':
+  //         setResult(e.data.output[0])
+  //         break;
+  //     }
+  //   };
+
+  //   // Attach the callback function as an event listener.
+  //   worker.current.addEventListener('message', onMessageReceived);
+
+  //   // Define a cleanup function for when the component is unmounted.
+  //   return () => worker?.current?.removeEventListener('message', onMessageReceived);
+  // });
+
+  // const classify = useCallback((url: string) => {
+  //   if (worker.current) {
+  //     worker.current.postMessage({ url });
+  //   }
+  // }, []);
 
   const [loadImage, setLoadImage] = useState(false);
 
@@ -37,13 +86,13 @@ export default function Home() {
 
 
   const [loading, setLoading] = useState(false);
-  const [ready, setReady] = useState(false);
   const segmenterRef = useRef<ImageSegmentationPipeline | null>(null)
 
   const handleClickDemo = async (index: number) => {
     const demo = exampleState[index];
     if (!demo.data) {
       await onTryDemo(index);
+      setLoadImage(false);
     }
     setDemoIndex(index);
   }
@@ -69,13 +118,16 @@ export default function Home() {
       console.log('output end', output);
       const result = formatData(output);
 
-      setExampleState((prev: any) => ({
-        ...prev,
-        [index]: {
+      setExampleState((prev: any) => {
+        const temp = prev;
+        temp[index] = {
           ...prev[index],
           data: result,
         }
-      }))
+
+        return temp;
+      })
+
 
       // const map: any = {}
       // Object.keys(output).forEach((key: any) => {
@@ -201,6 +253,8 @@ export default function Home() {
     // color, bgType, bgIndex
   ]);
 
+  console.log('imageDataResult', imageDataResult, 'loadImage', loadImage);
+
   return (
     <div className={`flex h-full width-full  flex-col`}>
       <div className='font-bold text-4xl text-center text-black h-[50px]'>在线变装</div>
@@ -213,9 +267,9 @@ export default function Home() {
             imageDataResult?.url && (
               <Image className={'absolute opacity-0 pointer-events-none'} ref={srcRef} src={imageDataResult.url} width={imageDataResult.width} height={imageDataResult.height} alt='img' onLoad={() => setLoadImage(true)} priority />
             )}
-          {/* <Button onClick={() => onTryDemo(index)} disabled={!ready || loading} >
+          <Button onClick={() => onTryDemo(demoIndex)} disabled={!ready || loading} >
             生成数据
-          </Button> */}
+          </Button>
           <div>试试 demo </div>
           <div className='h-[100px] w-full flex  items-center gap-5 justify-start overflow-x-auto '>
             {exampleState.map((it, index) => (
