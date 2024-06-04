@@ -10,12 +10,14 @@ import { Table } from "flowbite-react";
 import { changeHue, rgbToHsl } from '@/utils/color';
 import { cn } from '@/lib/utils';
 import { formatData } from '@/utils/format';
-import { loadImage } from '@/utils';
+import { getImageSize, loadImage } from '@/utils';
 
 export default function Home() {
   const workerRef = useRef<Worker | null>(null);
   const [result, setResult] = useState(null);
   const [ready, setReady] = useState(false);
+
+  const [userUploadData, setUserLoaderData] = useState<{ width: number, height: number, url: string, data: any } | null>(null)
 
   useEffect(() => {
     const worker = new Worker(new URL('../../worker/face-parse', import.meta.url), {
@@ -47,7 +49,7 @@ export default function Home() {
       throw event;
     };
 
-    // say hello, loadData
+    // !say hello, loadModel
     worker.postMessage({});
     workerRef.current = worker;
     return () => {
@@ -61,9 +63,14 @@ export default function Home() {
 
   useEffect(() => {
     if (result) {
-      console.log('result', result);
       const format = formatData(result);
-      console.log('format', format);
+      // @ts-ignore
+      setUserLoaderData((pre) => ({
+        ...pre,
+        data: format,
+      }))
+      setLoading(false);
+
     }
   }, [result]);
 
@@ -74,9 +81,11 @@ export default function Home() {
   const [exampleState, setExampleState] = useState(EXAMPLES);
 
   const imageDataResult = useMemo(() => {
-    // TODO: if userUpload then
+    if (userUploadData?.data) {
+      return userUploadData;
+    }
     return exampleState[demoIndex];
-  }, [demoIndex, exampleState])
+  }, [demoIndex, exampleState, userUploadData])
 
   useEffect(() => {
     function loadExamples() {
@@ -103,48 +112,8 @@ export default function Home() {
     if (!demo.data) {
       return;
     }
+    setUserLoaderData(null);
     setDemoIndex(index);
-  }
-
-
-  const onTryUpload = async (index: number) => {
-    if (!ready) {
-      console.error('model not ready');
-      return
-    }
-    setLoading(true);
-    const { url } = exampleState[index];
-    try {
-      classify(url);
-
-      //     setExampleState((prev: any) => {
-      //       const temp = prev;
-      //       temp[index] = {
-      //         ...prev[index],
-      //         data: result,
-      //       }
-
-      //       return temp;
-      //     })
-
-
-      //     // const map: any = {}
-      //     // Object.keys(output).forEach((key: any) => {
-      //     //   const item = output[key];
-      //     //   const { label, mask } = item;
-      //     //   map[label] = mask;
-      //     // });
-
-
-      //     // await saveAsset({
-      //     //   name: nanoid(),
-      //     //   data: map,
-      //     //   url: url,
-      //     // });
-    } catch (error) {
-      console.error('onTry error', error)
-    }
-    setLoading(false);
   }
 
   const handleMediaChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -153,18 +122,27 @@ export default function Home() {
       return
     }
     const file = event.target.files?.[0];
-    if (file) {
-      try {
-        const { name } = file;
-        if (/\s/.test(name)) {
-          // message.error('文件名不能存在空格');
-          return;
-        }
-        // db.files.put({ name, type: file.type, data: file })
-      } catch (error) {
-        console.error('handleMediaChange error', error)
-      }
-    };
+
+    if (!file) {
+      console.error('error upload');
+      return
+    }
+    const reader = new FileReader();
+
+    reader.onloadend = async function () {
+      var base64String = reader.result as string;
+      setLoading(true);
+      classify(base64String);
+      const { width, height } = await getImageSize(base64String);
+      setUserLoaderData({
+        width,
+        height,
+        url: base64String,
+        data: null,
+      })
+    }
+
+    reader.readAsDataURL(file);
   }
 
   const [bgTypeHair, setBgTypeHair] = useState(BG_TYPE.OPACITY);
@@ -256,8 +234,15 @@ export default function Home() {
 
       <div className='flex-1 flex p-[6px] relative width-full justify-between gap-10'>
         <Card className='flex-1 flex-col p-[6px] relative flex justify-center items-center'>
-          <canvas width={512} height={512} ref={canvasRef} className={'w-[512px] h-[512px]'}></canvas>
-          <Input disabled={!ready} type="file" className='h-[60px]' onChange={handleMediaChange} accept='image/*' />
+          <div className={'w-[512px] h-[512px] relative'}>
+            <canvas width={512} height={512} ref={canvasRef} className={'w-[512px] h-[512px]'}></canvas>
+            {loading && <div className={'absolute top-0 left-0 flex flex-col bg-[#000000dd] items-center justify-center w-full h-full'}>
+              <Spinner aria-label="Default status example" size={'xl'} />
+              <div className={'mt-2 text-lg'}>处理文件中...</div>
+            </div>
+            }
+          </div>
+          <Input disabled={!ready || loading} type="file" className='h-[60px]' onChange={handleMediaChange} accept='image/*' />
 
           <div>试试 demo </div>
           <div className='h-[100px] w-full flex  items-center gap-5 justify-start overflow-x-auto '>
@@ -265,16 +250,15 @@ export default function Home() {
               <div
                 key={it.url}
                 onClick={() => handleClickDemo(index)}
-                className={cn('w-[100px] h-[100px] relative border-[5px] rounded-md', demoIndex === index ? 'border-teal-300' : '', !it.data ? 'pointer-events-none' : 'pointer-events-auto')}>
+                className={cn('w-[100px] h-[100px] relative border-[5px] rounded-md', demoIndex === index ? 'border-teal-300' : '', (loading || !it.data) ? 'pointer-events-none' : 'pointer-events-auto')}>
                 <Image
                   src={it.url}
                   style={{ objectFit: 'contain', fill: 'contain' }}
                   sizes="100%"
                   fill alt='bg' />
-                {
-                  !it.data && (
-                    <Spinner aria-label="Default status example" size={'lg'} className={'absolute top-[30%] left-[30%] '} />
-                  )
+                {!it.data && <div className={'absolute top-0 left-0 flex flex-col bg-[#000000dd] items-center justify-center w-full h-full'}>
+                  <Spinner aria-label="Default status example" size={'lg'} />
+                </div>
                 }
               </div>
             ))}
