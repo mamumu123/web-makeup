@@ -33,3 +33,4 @@ export function getCenter(data: number[], width: number, height: number) {
         height: yMax - yMin,
     }
 }
+

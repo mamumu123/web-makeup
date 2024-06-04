@@ -1,79 +1,74 @@
 "use client";
 
-// import { useAssetData } from '@/hooks/useAssetDb';
-import { Button, Card } from 'flowbite-react';
+import { Button, Card, Spinner } from 'flowbite-react';
 import { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import Image from "next/image";
 import { Input } from "@/components/ui/input";
-import {
-  BG_TYPE, EXAMPLES
-} from '@/constants';
+import { BG_TYPE, EXAMPLES, EXAMPLE_SECOND } from '@/constants';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Table } from "flowbite-react";
 import { changeHue, rgbToHsl } from '@/utils/color';
 import { cn } from '@/lib/utils';
-import { pipeline, env, ImageSegmentationPipeline } from '@xenova/transformers';
 import { formatData } from '@/utils/format';
-env.allowLocalModels = false;
+import { loadImage } from '@/utils';
 
 export default function Home() {
-  const srcRef = useRef<HTMLImageElement>(null);
-  // const { mediaData, media } = useAssetData();
+  const workerRef = useRef<Worker | null>(null);
+  const [result, setResult] = useState(null);
   const [ready, setReady] = useState(false);
 
-  // // Create a reference to the worker object.
-  // const worker = useRef<Worker>(null);
+  useEffect(() => {
+    const worker = new Worker(new URL('../../worker/face-parse', import.meta.url), {
+      type: 'module'
+    });
 
-  // // Keep track of the classification result and the model loading status.
-  // const [result, setResult] = useState(null);
-  // const [ready, setReady] = useState(false);
+    worker.onmessage = (e: MessageEvent) => {
+      // console.log('onMessageReceived', e);
+      switch (e.data.status) {
+        case 'initiate':
+          setReady(false);
+          break;
+        case 'ready':
+          setReady(true);
+          break;
+        case 'complete':
+          setResult(e.data.output)
+          break;
+      }
+    };
 
-  // // We use the `useEffect` hook to set up the worker as soon as the `App` component is mounted.
-  // useEffect(() => {
-  //   if (worker.current) {
-  //     return
-  //   }
-  //   // Create the worker if it does not yet exist.
-  //   // @ts-ignore
-  //   worker.current = new Worker(new URL('./worker.js', import.meta.url), {
-  //     type: 'module'
-  //   });
+    worker.onerror = (event) => {
+      if (event instanceof Event) {
+        console.log('🍎 Error message received from worker: ', event);
+        return event;
+      }
 
-  //   if (!worker.current) { return }
+      console.log('🍎 Unexpected error: ', event);
+      throw event;
+    };
 
-  //   // Create a callback function for messages from the worker thread.
-  //   const onMessageReceived = (e: MessageEvent) => {
-  //     switch (e.data.status) {
-  //       case 'initiate':
-  //         setReady(false);
-  //         break;
-  //       case 'ready':
-  //         setReady(true);
-  //         break;
-  //       case 'complete':
-  //         setResult(e.data.output[0])
-  //         break;
-  //     }
-  //   };
+    // say hello, loadData
+    worker.postMessage({});
+    workerRef.current = worker;
+    return () => {
+      worker.terminate();
+    };
+  }, []);
 
-  //   // Attach the callback function as an event listener.
-  //   worker.current.addEventListener('message', onMessageReceived);
+  const classify = useCallback((url: string) => {
+    workerRef.current?.postMessage({ url });
+  }, []);
 
-  //   // Define a cleanup function for when the component is unmounted.
-  //   return () => worker?.current?.removeEventListener('message', onMessageReceived);
-  // });
-
-  // const classify = useCallback((url: string) => {
-  //   if (worker.current) {
-  //     worker.current.postMessage({ url });
-  //   }
-  // }, []);
-
-  const [loadImage, setLoadImage] = useState(false);
+  useEffect(() => {
+    if (result) {
+      console.log('result', result);
+      const format = formatData(result);
+      console.log('format', format);
+    }
+  }, [result]);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const canvasInitRef = useRef<HTMLCanvasElement>(null);
 
   const [demoIndex, setDemoIndex] = useState(0);
 
@@ -84,64 +79,69 @@ export default function Home() {
     return exampleState[demoIndex];
   }, [demoIndex, exampleState])
 
+  useEffect(() => {
+    function loadExamples() {
+      EXAMPLE_SECOND.forEach((item) => {
+        fetch(item.dataJson)
+          .then(response => response.json())
+          .then((result) => {
+            setExampleState((prev: any) => {
+              const temp = prev;
+              temp[item.index] = result;
+              return temp;
+            })
+          })
+      })
+    }
+
+    loadExamples();
+  }, []);
 
   const [loading, setLoading] = useState(false);
-  const segmenterRef = useRef<ImageSegmentationPipeline | null>(null)
 
   const handleClickDemo = async (index: number) => {
     const demo = exampleState[index];
     if (!demo.data) {
-      await onTryDemo(index);
-      setLoadImage(false);
+      return;
     }
     setDemoIndex(index);
   }
 
-  useEffect(() => {
-    async function loadingModel() {
-      const segmenter = await pipeline('image-segmentation', 'jonathandinu/face-parsing');
-      segmenterRef.current = segmenter;
-      setReady(true);
-    }
-    loadingModel();
-  })
 
   const onTryDemo = async (index: number) => {
-    if (!segmenterRef.current) {
-      console.error('segmenter failed')
+    if (!ready) {
+      console.error('model not ready');
       return
     }
     setLoading(true);
     const { url } = exampleState[index];
     try {
-      const output = await segmenterRef.current(url);
-      console.log('output end', output);
-      const result = formatData(output);
+      classify(url);
 
-      setExampleState((prev: any) => {
-        const temp = prev;
-        temp[index] = {
-          ...prev[index],
-          data: result,
-        }
+      //     setExampleState((prev: any) => {
+      //       const temp = prev;
+      //       temp[index] = {
+      //         ...prev[index],
+      //         data: result,
+      //       }
 
-        return temp;
-      })
+      //       return temp;
+      //     })
 
 
-      // const map: any = {}
-      // Object.keys(output).forEach((key: any) => {
-      //   const item = output[key];
-      //   const { label, mask } = item;
-      //   map[label] = mask;
-      // });
+      //     // const map: any = {}
+      //     // Object.keys(output).forEach((key: any) => {
+      //     //   const item = output[key];
+      //     //   const { label, mask } = item;
+      //     //   map[label] = mask;
+      //     // });
 
 
-      // await saveAsset({
-      //   name: nanoid(),
-      //   data: map,
-      //   url: url,
-      // });
+      //     // await saveAsset({
+      //     //   name: nanoid(),
+      //     //   data: map,
+      //     //   url: url,
+      //     // });
     } catch (error) {
       console.error('onTry error', error)
     }
@@ -154,106 +154,81 @@ export default function Home() {
   const [bgTypeLip, setBgTypeLip] = useState(BG_TYPE.OPACITY);
   const [colorLip, setColorLip] = useState('#FFFFFF');
 
-  // const [bgType, setBgType] = useState(BG_TYPE.INIT);
-  // const [color, setColor] = useState('#FFFFFF');
-  // const [bgIndex, setBgIndex] = useState(0);
-  // const bgRefs = useRef<any[]>([]);
-
   useEffect(() => {
-    if (!canvasRef.current || !canvasInitRef.current || !loadImage || !imageDataResult.data) {
-      return;
-    }
 
-    const ctx = canvasRef.current?.getContext('2d', { willReadFrequently: true });
-    // const ctxInit = canvasInitRef.current?.getContext('2d', { willReadFrequently: true });
-    if (!ctx) {
-      return
-    }
+    (async () => {
+      const { width, height, url, data: resultData } = imageDataResult;
 
-    const { width, height, url, data: resultData } = imageDataResult;
-    if (!width || !height || !url) {
-      return
-    }
-
-    // const {
-    //   background, hair,
-    //   l_lip: lowLip,
-    //   u_lip: upLip,
-    // } = mediaData || {};
-    // const {
-    //   data: dataBg,
-    //   width,
-    //   height,
-
-    // } = background;
-
-    // const { data: dataHair } = hair;
-
-    canvasRef.current.width = width;
-    canvasRef.current.height = height;
-    ctx.drawImage(srcRef.current!, 0, 0, width, height);
-    let imageData = ctx.getImageData(0, 0, width, height);
-
-    // canvasInitRef.current.width = width;
-    // canvasInitRef.current.height = height;
-    // ctxInit.drawImage(srcRef.current!, 0, 0, width, height);
-    // let imageDataInit = ctxInit.getImageData(0, 0, width, height);
-
-
-    if (bgTypeHair === BG_TYPE.ONE) {
-      const color = colorHair;
-      const r = parseInt(color.slice(1, 3), 16);
-      const g = parseInt(color.slice(3, 5), 16);
-      const b = parseInt(color.slice(5, 7), 16);
-      const hsl = rgbToHsl(r, g, b);
-      const newHue = hsl[0];
-      const data: number[] = resultData.hairData;
-
-      for (let index of data) {
-
-        const newColor = changeHue(
-          [
-            imageData.data[index * 4],
-            imageData.data[index * 4 + 1],
-            imageData.data[index * 4 + 2]],
-          newHue)
-        imageData.data[index * 4 + 0] = newColor[0];
-        imageData.data[index * 4 + 1] = newColor[1];
-        imageData.data[index * 4 + 2] = newColor[2];
+      if (!canvasRef.current || !resultData || !width || !height || !url) {
+        console.error('canvasRef', canvasRef.current, 'resultData', resultData, 'width', width, 'height', height, 'url', url);
+        return;
       }
-    }
 
-    if (bgTypeLip === BG_TYPE.ONE) {
-      const color = colorLip;
-      const r = parseInt(color.slice(1, 3), 16);
-      const g = parseInt(color.slice(3, 5), 16);
-      const b = parseInt(color.slice(5, 7), 16);
-      const hsl = rgbToHsl(r, g, b);
-      const newHue = hsl[0];
-      const data: number[] = resultData.lipData;
-      for (let index of data) {
-
-        const newColor = changeHue(
-          [
-            imageData.data[index * 4],
-            imageData.data[index * 4 + 1],
-            imageData.data[index * 4 + 2]],
-          newHue)
-        imageData.data[index * 4 + 0] = newColor[0];
-        imageData.data[index * 4 + 1] = newColor[1];
-        imageData.data[index * 4 + 2] = newColor[2];
+      const ctx = canvasRef.current?.getContext('2d', { willReadFrequently: true });
+      if (!ctx) {
+        console.error('ctx', ctx);
+        return
       }
-    }
-    ctx.putImageData(imageData, 0, 0);
+
+      canvasRef.current.width = width;
+      canvasRef.current.height = height;
+      const imageElement = await loadImage(url);
+      ctx.drawImage(imageElement, 0, 0, width, height);
+      let imageData = ctx.getImageData(0, 0, width, height);
+
+      if (bgTypeHair === BG_TYPE.ONE) {
+        const color = colorHair;
+        const r = parseInt(color.slice(1, 3), 16);
+        const g = parseInt(color.slice(3, 5), 16);
+        const b = parseInt(color.slice(5, 7), 16);
+        const hsl = rgbToHsl(r, g, b);
+        const newHue = hsl[0];
+        const data: number[] = resultData.hairData;
+
+        for (let index of data) {
+
+          const newColor = changeHue(
+            [
+              imageData.data[index * 4],
+              imageData.data[index * 4 + 1],
+              imageData.data[index * 4 + 2]],
+            newHue)
+          imageData.data[index * 4 + 0] = newColor[0];
+          imageData.data[index * 4 + 1] = newColor[1];
+          imageData.data[index * 4 + 2] = newColor[2];
+        }
+      }
+
+      if (bgTypeLip === BG_TYPE.ONE) {
+        const color = colorLip;
+        const r = parseInt(color.slice(1, 3), 16);
+        const g = parseInt(color.slice(3, 5), 16);
+        const b = parseInt(color.slice(5, 7), 16);
+        const hsl = rgbToHsl(r, g, b);
+        const newHue = hsl[0];
+        const data: number[] = resultData.lipData;
+        for (let index of data) {
+
+          const newColor = changeHue(
+            [
+              imageData.data[index * 4],
+              imageData.data[index * 4 + 1],
+              imageData.data[index * 4 + 2]],
+            newHue)
+          imageData.data[index * 4 + 0] = newColor[0];
+          imageData.data[index * 4 + 1] = newColor[1];
+          imageData.data[index * 4 + 2] = newColor[2];
+        }
+      }
+      ctx.putImageData(imageData, 0, 0);
+    })()
   }, [
     imageDataResult,
-    loadImage,
     bgTypeHair, colorHair,
     colorLip, bgTypeLip,
-    // color, bgType, bgIndex
   ]);
 
-  console.log('imageDataResult', imageDataResult, 'loadImage', loadImage);
+  console.log('imageDataResult', imageDataResult);
 
   return (
     <div className={`flex h-full width-full  flex-col`}>
@@ -262,13 +237,8 @@ export default function Home() {
       <div className='flex-1 flex p-[6px] relative width-full justify-between gap-10'>
         <Card className='flex-1 flex-col p-[6px] relative flex justify-center items-center'>
           <canvas width={512} height={512} ref={canvasRef} className={'w-[512px] h-[512px]'}></canvas>
-          <canvas width={512} height={512} ref={canvasInitRef} className={'w-[512px] h-[512px] hidden absolute'}></canvas>
-          {
-            imageDataResult?.url && (
-              <Image className={'absolute opacity-0 pointer-events-none'} ref={srcRef} src={imageDataResult.url} width={imageDataResult.width} height={imageDataResult.height} alt='img' onLoad={() => setLoadImage(true)} priority />
-            )}
           <Button onClick={() => onTryDemo(demoIndex)} disabled={!ready || loading} >
-            生成数据
+            {ready ? '生成数据' : '模型加载中'}
           </Button>
           <div>试试 demo </div>
           <div className='h-[100px] w-full flex  items-center gap-5 justify-start overflow-x-auto '>
@@ -276,12 +246,17 @@ export default function Home() {
               <div
                 key={it.url}
                 onClick={() => handleClickDemo(index)}
-                className={cn('w-[100px] h-[100px] relative border-[5px] rounded-md', demoIndex === index ? 'border-teal-300' : '')}>
+                className={cn('w-[100px] h-[100px] relative border-[5px] rounded-md', demoIndex === index ? 'border-teal-300' : '', !it.data ? 'pointer-events-none' : 'pointer-events-auto')}>
                 <Image
                   src={it.url}
                   style={{ objectFit: 'contain', fill: 'contain' }}
                   sizes="100%"
                   fill alt='bg' />
+                {
+                  !it.data && (
+                    <Spinner aria-label="Default status example" size={'lg'} className={'absolute top-[30%] left-[30%] '} />
+                  )
+                }
               </div>
             ))}
           </div>
@@ -350,10 +325,7 @@ export default function Home() {
             </Table.Body>
           </Table>
         </div>
-
-
       </div>
-
     </div >
   );
 }

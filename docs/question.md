@@ -26,3 +26,9 @@
 
 
 ### color 
+
+
+
+
+### worker
+https://loclv.hashnode.dev/a-simple-web-worker-demo-with-typescript-and-nextjs
