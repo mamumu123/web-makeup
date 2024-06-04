@@ -1,12 +1,11 @@
 "use client";
 
-import { Button, Card, Spinner } from 'flowbite-react';
+import { Card, Label, Spinner } from 'flowbite-react';
 import { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { BG_TYPE, EXAMPLES, EXAMPLE_SECOND } from '@/constants';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
 import { Table } from "flowbite-react";
 import { changeHue, rgbToHsl } from '@/utils/color';
 import { cn } from '@/lib/utils';
@@ -108,7 +107,7 @@ export default function Home() {
   }
 
 
-  const onTryDemo = async (index: number) => {
+  const onTryUpload = async (index: number) => {
     if (!ready) {
       console.error('model not ready');
       return
@@ -146,6 +145,26 @@ export default function Home() {
       console.error('onTry error', error)
     }
     setLoading(false);
+  }
+
+  const handleMediaChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!ready) {
+      console.error('model not ready');
+      return
+    }
+    const file = event.target.files?.[0];
+    if (file) {
+      try {
+        const { name } = file;
+        if (/\s/.test(name)) {
+          // message.error('文件名不能存在空格');
+          return;
+        }
+        // db.files.put({ name, type: file.type, data: file })
+      } catch (error) {
+        console.error('handleMediaChange error', error)
+      }
+    };
   }
 
   const [bgTypeHair, setBgTypeHair] = useState(BG_TYPE.OPACITY);
@@ -233,13 +252,13 @@ export default function Home() {
   return (
     <div className={`flex h-full width-full  flex-col`}>
       <div className='font-bold text-4xl text-center text-black h-[50px]'>在线变装</div>
-      <h2 className="mb-4 text-center  h-[20px]">上传一张人像照片，就可以开始神奇变化</h2>
+      <h2 className="mb-4 text-center  h-[20px]">上传一张人像照片，就可以开始神奇变化{ready ? '' : '(模型加载中)'}</h2>
+
       <div className='flex-1 flex p-[6px] relative width-full justify-between gap-10'>
         <Card className='flex-1 flex-col p-[6px] relative flex justify-center items-center'>
           <canvas width={512} height={512} ref={canvasRef} className={'w-[512px] h-[512px]'}></canvas>
-          <Button onClick={() => onTryDemo(demoIndex)} disabled={!ready || loading} >
-            {ready ? '生成数据' : '模型加载中'}
-          </Button>
+          <Input disabled={!ready} type="file" className='h-[60px]' onChange={handleMediaChange} accept='image/*' />
+
           <div>试试 demo </div>
           <div className='h-[100px] w-full flex  items-center gap-5 justify-start overflow-x-auto '>
             {exampleState.map((it, index) => (
@@ -292,7 +311,6 @@ export default function Home() {
                     <div className={'w-[200px] flex justify-around items-center'}>
                       <Label htmlFor="colorHair" className={'text-nowrap'}>背景色</Label>
                       <Input disabled={bgTypeHair !== BG_TYPE.ONE} value={colorHair} onChange={(event) => setColorHair(event.target.value)} type="color"></Input>
-
                     </div>
                   </div>
                 </Table.Cell>
