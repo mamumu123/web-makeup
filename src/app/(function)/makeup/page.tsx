@@ -1,16 +1,20 @@
 "use client";
 
-import { Card, Label, Spinner } from 'flowbite-react';
+import { Button, Card, Label, Spinner } from 'flowbite-react';
 import { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import Image from "next/image";
 import { Input } from "@/components/ui/input";
-import { BG_TYPE, EXAMPLES, EXAMPLE_SECOND } from '@/constants';
+import { BG_TYPE, CANVAS_STYLE, EXAMPLES, EXAMPLE_SECOND } from '@/constants';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Table } from "flowbite-react";
 import { changeHue, rgbToHsl } from '@/utils/color';
 import { cn } from '@/lib/utils';
 import { formatData } from '@/utils/format';
 import { getImageSize, loadImage } from '@/utils';
+
+import HAIR_DATA from '@/assets/json/hair.json';
+import LIP_DATA from '@/assets/json/lip.json';
+import { download } from '@/utils/download';
 
 export default function Home() {
   const workerRef = useRef<Worker | null>(null);
@@ -166,7 +170,9 @@ export default function Home() {
         console.error('ctx', ctx);
         return
       }
-
+      // const maxSize = 
+      canvasRef.current.style.width = `${width > height ? CANVAS_STYLE : CANVAS_STYLE * (width / height)}px`;
+      canvasRef.current.style.height = `${height > width ? CANVAS_STYLE : CANVAS_STYLE * (width / height)}px`
       canvasRef.current.width = width;
       canvasRef.current.height = height;
       const imageElement = await loadImage(url);
@@ -232,9 +238,10 @@ export default function Home() {
       <div className='font-bold text-4xl text-center text-black h-[50px]'>在线变装</div>
       <h2 className="mb-4 text-center  h-[20px]">上传一张人像照片，就可以开始神奇变化{ready ? '' : '(模型加载中)'}</h2>
 
-      <div className='flex-1 flex p-[6px] relative width-full justify-between gap-10'>
-        <Card className='flex-1 flex-col p-[6px] relative flex justify-center items-center'>
-          <div className={'w-[512px] h-[512px] relative'}>
+      <div className='flex-1 flex p-[6px] relative width-full justify-between gap-10 overflow-auto'>
+        <Card className='flex-1 flex-col p-[6px] relative flex'>
+          <div className='font-bold text-2xl text-center text-black' >效果区</div>
+          <div className={' h-[512px] w-full relative flex justify-center items-center'}>
             <canvas width={512} height={512} ref={canvasRef} className={'w-[512px] h-[512px]'}></canvas>
             {loading && <div className={'absolute top-0 left-0 flex flex-col bg-[#000000dd] items-center justify-center w-full h-full'}>
               <Spinner aria-label="Default status example" size={'xl'} />
@@ -242,7 +249,10 @@ export default function Home() {
             </div>
             }
           </div>
-          <Input disabled={!ready || loading} type="file" className='h-[60px]' onChange={handleMediaChange} accept='image/*' />
+          <div className='w-full relative flex justify-between items-center'>
+            <Input disabled={!ready || loading} type="file" className='h-[60px] flex-1' onChange={handleMediaChange} accept='image/*' />
+            <Button className='flex-1' disabled={!ready || loading} onClick={() => download(canvasRef)}>下载</Button>
+          </div>
 
           <div>试试 demo </div>
           <div className='h-[100px] w-full flex  items-center gap-5 justify-start overflow-x-auto '>
@@ -266,12 +276,13 @@ export default function Home() {
 
         </Card>
 
-        <div className='flex-1 rounded-md'>
+        <div className='flex-1 rounded-md overflow-y-auto'>
           <Table>
             <Table.Head>
               <Table.HeadCell>修改项</Table.HeadCell>
               <Table.HeadCell>操作栏</Table.HeadCell>
               <Table.HeadCell>操作详情</Table.HeadCell>
+              <Table.HeadCell>自定义颜色</Table.HeadCell>
             </Table.Head>
             <Table.Body className="divide-y">
               <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-800">
@@ -290,10 +301,20 @@ export default function Home() {
                     </div>
                   </RadioGroup>
                 </Table.Cell>
+                <Table.Cell className={'flex-1'}>
+                  <div className={'overflow-x-auto flex items-center flex-wrap flex-1'}>
+                    {HAIR_DATA.slice(0, 40).map((item) => (
+                      <Button key={item}
+                        disabled={bgTypeHair !== BG_TYPE.ONE}
+                        onClick={() => setColorHair(item)}
+                        style={{ backgroundColor: item }} >{item}</Button>
+                    ))}
+                  </div>
+                </Table.Cell>
                 <Table.Cell>
                   <div className={'flex items-center'}>
-                    <div className={'w-[200px] flex justify-around items-center'}>
-                      <Label htmlFor="colorHair" className={'text-nowrap'}>背景色</Label>
+                    <div className={'w-[200px] flex justify-around flex-col items-center'}>
+                      <Label htmlFor="colorHair" className={'text-nowrap'}>当前色号：{colorHair}</Label>
                       <Input disabled={bgTypeHair !== BG_TYPE.ONE} value={colorHair} onChange={(event) => setColorHair(event.target.value)} type="color"></Input>
                     </div>
                   </div>
@@ -315,10 +336,20 @@ export default function Home() {
                     </div>
                   </RadioGroup>
                 </Table.Cell>
+                <Table.Cell className={'flex-1'}>
+                  <div className={'overflow-x-auto flex items-center flex-wrap flex-1'}>
+                    {LIP_DATA.map((item) => (
+                      <Button key={item.color}
+                        disabled={bgTypeLip !== BG_TYPE.ONE}
+                        onClick={() => setColorLip(item.color)}
+                        style={{ backgroundColor: item.color }} >{item.color}</Button>
+                    ))}
+                  </div>
+                </Table.Cell>
                 <Table.Cell>
                   <div className={'flex items-center'}>
                     <div className={'flex justify-around items-center w-[200px]'}>
-                      <Label htmlFor="color-lip" className={'text-nowrap'}>背景色</Label>
+                      <Label htmlFor="color-lip" className={'text-nowrap'}>当前色号：{colorLip}</Label>
                       <Input disabled={bgTypeLip !== BG_TYPE.ONE} value={colorLip} onChange={(event) => setColorLip(event.target.value)} type="color" id='color-lip'></Input>
                     </div>
                   </div>

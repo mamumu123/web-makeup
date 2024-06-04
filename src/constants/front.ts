@@ -23,3 +23,5 @@ export const BG_IMAGE = [
         url: '/bg/red.png',
     },
 ]
+
+export const CANVAS_STYLE = 512;
