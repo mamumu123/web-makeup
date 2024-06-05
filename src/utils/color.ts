@@ -61,6 +61,26 @@ export function rgbToHsl(r: number, g: number, b: number): [number, number, numb
 
 export function changeHue(rgb: [number, number, number], newHue: number): [number, number, number] {
     const hsl = rgbToHsl(rgb[0], rgb[1], rgb[2]);
-    hsl[0] = (hsl[0] + newHue) % 360; // 改变色调
+    hsl[0] = newHue; // 改变色调
     return hslToRgb(hsl[0], hsl[1], hsl[2]);
+}
+
+export function hexToHue(hex: string): number {
+    let r = parseInt(hex.slice(1, 3), 16);
+    let g = parseInt(hex.slice(3, 5), 16);
+    let b = parseInt(hex.slice(5, 7), 16);
+
+    let max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let hue = 0;
+    let delta = max - min;
+
+    switch (max) {
+        case min: hue = 0; break; // achromatic
+        case r: hue = (g - b) / delta + (g < b ? 6 : 0); break;
+        case g: hue = (b - r) / delta + 2; break;
+        case b: hue = (r - g) / delta + 4; break;
+    }
+
+    hue /= 6;
+    return hue * 360; // return hue value in range [0, 360]
 }

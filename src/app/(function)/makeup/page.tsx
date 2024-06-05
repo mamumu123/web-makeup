@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { BG_TYPE, CANVAS_STYLE, EXAMPLES, EXAMPLE_SECOND } from '@/constants';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Table } from "flowbite-react";
-import { changeHue, rgbToHsl } from '@/utils/color';
+import { changeHue, hexToHue, rgbToHsl } from '@/utils/color';
 import { cn } from '@/lib/utils';
 import { formatData } from '@/utils/format';
 import { getImageSize, loadImage } from '@/utils';
@@ -181,13 +181,8 @@ export default function Home() {
 
       if (bgTypeHair === BG_TYPE.ONE) {
         const color = colorHair;
-        const r = parseInt(color.slice(1, 3), 16);
-        const g = parseInt(color.slice(3, 5), 16);
-        const b = parseInt(color.slice(5, 7), 16);
-        const hsl = rgbToHsl(r, g, b);
-        const newHue = hsl[0];
+        const newHue = hexToHue(color);
         const data: number[] = resultData.hairData;
-
         for (let index of data) {
 
           const newColor = changeHue(
@@ -204,11 +199,7 @@ export default function Home() {
 
       if (bgTypeLip === BG_TYPE.ONE) {
         const color = colorLip;
-        const r = parseInt(color.slice(1, 3), 16);
-        const g = parseInt(color.slice(3, 5), 16);
-        const b = parseInt(color.slice(5, 7), 16);
-        const hsl = rgbToHsl(r, g, b);
-        const newHue = hsl[0];
+        const newHue = hexToHue(color);
         const data: number[] = resultData.lipData;
         for (let index of data) {
 
@@ -217,7 +208,7 @@ export default function Home() {
               imageData.data[index * 4],
               imageData.data[index * 4 + 1],
               imageData.data[index * 4 + 2]],
-            newHue)
+            newHue);
           imageData.data[index * 4 + 0] = newColor[0];
           imageData.data[index * 4 + 1] = newColor[1];
           imageData.data[index * 4 + 2] = newColor[2];
@@ -230,8 +221,6 @@ export default function Home() {
     bgTypeHair, colorHair,
     colorLip, bgTypeLip,
   ]);
-
-  console.log('imageDataResult', imageDataResult);
 
   return (
     <div className={`flex h-full width-full  flex-col`}>
