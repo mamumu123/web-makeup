@@ -24,4 +24,4 @@ export const BG_IMAGE = [
     },
 ]
 
-export const CANVAS_STYLE = 512;
+export const CANVAS_STYLE = 400;

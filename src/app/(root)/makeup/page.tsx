@@ -229,9 +229,8 @@ export default function Home() {
 
       <div className='flex-1 flex p-[6px] relative width-full justify-between gap-10 overflow-auto'>
         <Card className='flex-1 flex-col p-[6px] relative flex'>
-          <div className='font-bold text-2xl text-center text-black' >效果区</div>
-          <div className={' h-[512px] w-full relative flex justify-center items-center'}>
-            <canvas width={512} height={512} ref={canvasRef} className={'w-[512px] h-[512px]'}></canvas>
+          <div className={' h-[400px] w-full relative flex justify-center items-center'}>
+            <canvas width={CANVAS_STYLE} height={CANVAS_STYLE} ref={canvasRef} className={'w-[400px] h-[400px]'}></canvas>
             {loading && <div className={'absolute top-0 left-0 flex flex-col bg-[#000000dd] items-center justify-center w-full h-full'}>
               <Spinner aria-label="Default status example" size={'xl'} />
               <div className={'mt-2 text-lg'}>处理文件中...</div>
@@ -295,17 +294,16 @@ export default function Home() {
                     {HAIR_DATA.slice(0, 40).map((item) => (
                       <Button key={item}
                         disabled={bgTypeHair !== BG_TYPE.ONE}
+                        size={'xs'}
                         onClick={() => setColorHair(item)}
                         style={{ backgroundColor: item }} >{item}</Button>
                     ))}
                   </div>
                 </Table.Cell>
                 <Table.Cell>
-                  <div className={'flex items-center'}>
-                    <div className={'w-[200px] flex justify-around flex-col items-center'}>
-                      <Label htmlFor="colorHair" className={'text-nowrap'}>当前色号：{colorHair}</Label>
-                      <Input disabled={bgTypeHair !== BG_TYPE.ONE} value={colorHair} onChange={(event) => setColorHair(event.target.value)} type="color"></Input>
-                    </div>
+                  <div className={'flex flex-col justify-around  items-center'}>
+                    <Label htmlFor="colorHair" className={'text-nowrap'}>{colorHair}</Label>
+                    <input className='width-[50px]' disabled={bgTypeHair !== BG_TYPE.ONE} value={colorHair} onChange={(event) => setColorHair(event.target.value)} type="color" />
                   </div>
                 </Table.Cell>
               </Table.Row>
@@ -329,6 +327,7 @@ export default function Home() {
                   <div className={'overflow-x-auto flex items-center flex-wrap flex-1'}>
                     {LIP_DATA.map((item) => (
                       <Button key={item.color}
+                        size={'xs'}
                         disabled={bgTypeLip !== BG_TYPE.ONE}
                         onClick={() => setColorLip(item.color)}
                         style={{ backgroundColor: item.color }} >{item.color}</Button>
@@ -336,11 +335,9 @@ export default function Home() {
                   </div>
                 </Table.Cell>
                 <Table.Cell>
-                  <div className={'flex items-center'}>
-                    <div className={'flex justify-around items-center w-[200px]'}>
-                      <Label htmlFor="color-lip" className={'text-nowrap'}>当前色号：{colorLip}</Label>
-                      <Input disabled={bgTypeLip !== BG_TYPE.ONE} value={colorLip} onChange={(event) => setColorLip(event.target.value)} type="color" id='color-lip'></Input>
-                    </div>
+                  <div className={'flex flex-col justify-center items-center '}>
+                    <Label htmlFor="color-lip" className={'text-nowrap'}>{colorLip}</Label>
+                    <input className='width-[50px]' disabled={bgTypeLip !== BG_TYPE.ONE} value={colorLip} onChange={(event) => setColorLip(event.target.value)} type="color" id='color-lip' />
                   </div>
                 </Table.Cell>
               </Table.Row>
