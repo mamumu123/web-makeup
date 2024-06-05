@@ -4,8 +4,8 @@ import { cn } from "@/lib/utils";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "潦草头像",
-  description: "创建一个潦草头像，各种奇怪的变化",
+  title: "在线变装",
+  description: "纯前端实现在线变装、头发换色、口红换色",
 };
 
 export default function RootLayout({

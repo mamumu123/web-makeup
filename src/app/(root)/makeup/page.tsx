@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { BG_TYPE, CANVAS_STYLE, EXAMPLES, EXAMPLE_SECOND } from '@/constants';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Table } from "flowbite-react";
-import { changeHue, hexToHue, rgbToHsl } from '@/utils/color';
+import { changeHue, hexToHue } from '@/utils/color';
 import { cn } from '@/lib/utils';
 import { formatData } from '@/utils/format';
 import { getImageSize, loadImage } from '@/utils';
@@ -24,7 +24,7 @@ export default function Home() {
   const [userUploadData, setUserLoaderData] = useState<{ width: number, height: number, url: string, data: any } | null>(null)
 
   useEffect(() => {
-    const worker = new Worker(new URL('../../worker/face-parse', import.meta.url), {
+    const worker = new Worker(new URL('../../../worker/face-parse', import.meta.url), {
       type: 'module'
     });
 
