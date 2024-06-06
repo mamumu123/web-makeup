@@ -1,29 +1,3 @@
-
-## 效果展示
-
-## 体验地址
-
-
-## 源码地址
-
-
-## 项目背景
-
-
-
-
-
-
-## 技术细节
-
-
-## TODO
-
-
-
-## 参考
-
-
 ## Getting Started
 
 First, run the development server:
