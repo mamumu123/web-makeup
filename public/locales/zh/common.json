@@ -1,7 +1,22 @@
 {
-    "title": "hello",
     "Index": {
-        "title": "在线变装"
+        "title": "在线变装",
+        "desc": "上传一张人像照片，就可以开始神奇变化",
+        "try-it": "动手试试"
     },
-    "makeup": {}
+    "Makeup": {
+        "title": "在线变装",
+        "desc": "上传一张人像照片，就可以开始神奇变化",
+        "download": "下载图片",
+        "try-it": "试试 demo",
+        "dealing": "处理文件中...",
+        "hair-color": "头发颜色",
+        "lip-color": "口红颜色",
+        "default-color": "默认颜色",
+        "custom-color": "自定义",
+        "table-modify": "修改项",
+        "table-op": "操作栏",
+        "table-detail": "操作详情",
+        "table-custom": "自定义颜色"
+    }
 }

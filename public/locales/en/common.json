@@ -1,6 +1,22 @@
 {
-    "title": "hello",
     "Index": {
-        "title": "web makeup"
+        "title": "WEB MAKEUP",
+        "desc": "Upload a portrait photo and you can start a magical transformation",
+        "try-it": "try it"
+    },
+    "Makeup": {
+        "title": "WEB MAKEUP",
+        "desc": "Upload a portrait photo and you can start a magical transformation",
+        "download": "Download",
+        "try-it": "Try the demo",
+        "dealing": "Processing files...",
+        "hair-color": "Hair Color",
+        "lip-color": "Lipstick Color",
+        "default-color": "Default Color",
+        "custom-color": "Custom",
+        "table-modify": "Modifications",
+        "table-op": "Operation Bar",
+        "table-detail": "Operation details",
+        "table-custom": "Custom colors"
     }
 }

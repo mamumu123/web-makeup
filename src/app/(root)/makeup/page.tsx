@@ -15,8 +15,11 @@ import { getImageSize, loadImage } from '@/utils';
 import HAIR_DATA from '@/assets/json/hair.json';
 import LIP_DATA from '@/assets/json/lip.json';
 import { download } from '@/utils/download';
+import { useTranslations } from 'next-intl';
 
 export default function Home() {
+  const t = useTranslations('Makeup');
+
   const workerRef = useRef<Worker | null>(null);
   const [result, setResult] = useState(null);
   const [ready, setReady] = useState(false);
@@ -224,8 +227,8 @@ export default function Home() {
 
   return (
     <div className={`flex h-full width-full  flex-col`}>
-      <div className='font-bold text-4xl text-center text-black h-[50px]'>在线变装</div>
-      <h2 className="mb-4 text-center  h-[20px]">上传一张人像照片，就可以开始神奇变化{ready ? '' : '(模型加载中)'}</h2>
+      <div className='font-bold text-4xl text-center text-black h-[50px]'>{t('title')}</div>
+      <h2 className="mb-4 text-center  h-[20px]">{t('desc')}</h2>
 
       <div className='flex-1 flex p-[6px] relative width-full justify-between gap-10 overflow-auto'>
         <Card className='flex-1 flex-col p-[6px] relative flex'>
@@ -233,16 +236,16 @@ export default function Home() {
             <canvas width={CANVAS_STYLE} height={CANVAS_STYLE} ref={canvasRef} className={'w-[400px] h-[400px]'}></canvas>
             {loading && <div className={'absolute top-0 left-0 flex flex-col bg-[#000000dd] items-center justify-center w-full h-full'}>
               <Spinner aria-label="Default status example" size={'xl'} />
-              <div className={'mt-2 text-lg'}>处理文件中...</div>
+              <div className={'mt-2 text-lg'}>{t('dealing')}</div>
             </div>
             }
           </div>
           <div className='w-full relative flex justify-between items-center'>
             <Input disabled={!ready || loading} type="file" className='h-[60px] flex-1' onChange={handleMediaChange} accept='image/*' />
-            <Button className='flex-1' disabled={!ready || loading} onClick={() => download(canvasRef)}>下载</Button>
+            <Button className='flex-1' disabled={!ready || loading} onClick={() => download(canvasRef)}>{t('download')}</Button>
           </div>
 
-          <div>试试 demo </div>
+          <div>{t('try-it')} </div>
           <div className='h-[100px] w-full flex  items-center gap-5 justify-start overflow-x-auto '>
             {exampleState.map((it, index) => (
               <div
@@ -267,25 +270,25 @@ export default function Home() {
         <div className='flex-1 rounded-md overflow-y-auto'>
           <Table>
             <Table.Head>
-              <Table.HeadCell>修改项</Table.HeadCell>
-              <Table.HeadCell>操作栏</Table.HeadCell>
-              <Table.HeadCell>操作详情</Table.HeadCell>
-              <Table.HeadCell>自定义颜色</Table.HeadCell>
+              <Table.HeadCell>{t('table-modify')}</Table.HeadCell>
+              <Table.HeadCell>{t('table-op')}</Table.HeadCell>
+              <Table.HeadCell>{t('table-detail')}</Table.HeadCell>
+              <Table.HeadCell>{t('table-custom')}</Table.HeadCell>
             </Table.Head>
             <Table.Body className="divide-y">
               <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-800">
                 <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                  {'头发颜色'}
+                  {t('hair-color')}
                 </Table.Cell>
                 <Table.Cell>
                   <RadioGroup value={bgTypeHair} onValueChange={(it: BG_TYPE) => setBgTypeHair(it)}>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="opacity" id="opacity" />
-                      <Label htmlFor="opacity">默认颜色</Label>
+                      <Label htmlFor="opacity">{t('default-color')}</Label>
                     </div>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="one" id="one" />
-                      <Label htmlFor="one">颜色背景</Label>
+                      <Label htmlFor="one">{t('custom-color')}</Label>
                     </div>
                   </RadioGroup>
                 </Table.Cell>
@@ -309,17 +312,17 @@ export default function Home() {
               </Table.Row>
               <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-800">
                 <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                  {'口红颜色'}
+                  {t('lip-color')}
                 </Table.Cell>
                 <Table.Cell>
                   <RadioGroup value={bgTypeLip} onValueChange={(value: BG_TYPE) => setBgTypeLip(value)}>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="opacity" id="opacity" />
-                      <Label htmlFor="opacity">默认颜色</Label>
+                      <Label htmlFor="opacity">{t('default-color')}</Label>
                     </div>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="one" id="one" />
-                      <Label htmlFor="one">颜色背景</Label>
+                      <Label htmlFor="one">{t('custom-color')}</Label>
                     </div>
                   </RadioGroup>
                 </Table.Cell>

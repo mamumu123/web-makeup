@@ -19,7 +19,7 @@ export default function Home() {
     <div className={`flex min-h-screen flex-col w-full p-2 bg-rose-200`}>
       <div className='font-bold text-4xl text-center text-black mb-10'>{t('title')}</div>
       <div className="w-full h-[50%] flex flex-col items-center">
-        <h2 className="mb-4">上传一张人像照片，就可以开始神奇变化</h2>
+        <h2 className="mb-4">{t('desc')}</h2>
         <div className={'relative w-[600px] h-[600px] flex items-center justify-center overflow-hidden'}>
           {/* 展示一些效果 demo, */}
           <ImgComparisonSlider className={'absolute top-0 left-0'}>
@@ -28,7 +28,7 @@ export default function Home() {
           </ImgComparisonSlider>
         </div>
 
-        <Button onClick={gotoMakeup} className="mt-5">动手试试</Button>
+        <Button onClick={gotoMakeup} className="mt-5">{t('try-it')}</Button>
       </div>
     </div>
   );
