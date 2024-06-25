@@ -1,161 +1,138 @@
+>If you like this project, please give me a star on [GitHub](https://github.com/mamumu123/web-makeup), it will give me more motivation to expand project functionality.
 
+>TODO:  
+> - Support changing hairstyles;
+> - Display hairstyle and lip recognition results
+> - Find models with higher accuracy and faster derivation speed
 
-## 声明
-项目声明：本项目为纯前端实现，所有用户上传的图片均在用户本地进行处理，无需担心安全问题。
+## Declaration
+This project is a pure front-end application, and all images uploaded by users are processed locally without any security concerns.
 
-## 效果展示
+## Effect display
 
-![截屏2024-06-05 21.21.58.png](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/c9cc23f764164ffb993b4ef535c454eb~tplv-k3u1fbpfcp-jj-mark:0:0:0:0:q75.image#?w=3340&h=1796&s=1980350&e=png&b=faf6f6)
+![Effect display](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/jcwslu1tsqj8wsodkusz.png)
 
-## 体验地址
+## Demo
 https://web-makeup.vercel.app/makeup
 
-## 源码地址
+## Source code 
 
 https://github.com/mamumu123/web-makeup
 
-## 项目介绍
-本项目实现了换头发颜色和口红颜色的功能，特点是纯前端能力，不需要服务器支持，具有安全性。
+## Project Introduction
+This project has implemented the function of changing hair color and lipstick color, characterized by pure front-end capability, no server support, and security.
 
-## Getting Started
+## Technical details
 
-First, run the development server:
+### How to recognize the position of hair and lips
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+After searching online, I found a ready-made model that can recognize the position of hair and lips.
+[Xenova/face-parsing](https://huggingface.co/Xenova/face-parsing).
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-## Learn More
-
-## Deploy on Vercel
-如果你没有自己的服务端，你可以免费的部署在 vercel 上。
-
-
-## 技术细节
-
-### 如何识别到头发和嘴唇的位置
-
-在网上寻找以后，找到了一个现成的模型，可以识别出头发和嘴唇的位置。
-[Xenova/face-parsing](https://huggingface.co/Xenova/face-parsing)
-
-在前端使用模型能力，比较简单。最简化的代码，就是下面这几行。
+Using model capabilities in the front-end is relatively simple. The simplest code is the following lines.
 ```js
 import { pipeline } from '@xenova/transformers';
 
 const segmenter = await pipeline('image-segmentation', 'Xenova/face-parsing');
 
-const url = 'https://huggingface.co/datasets/Xenova/transformers.js-docs/resolve/main/portrait-of-woman.jpg';
+const url = ' https://huggingface.co/datasets/Xenova/transformers.js-docs/resolve/main/portrait-of-woman.jpg ';
 const output = await segmenter(url);
 console.log(output)
 ```
 
-如果你想在线尝试这个模型能力，可以在这个界面的右侧进行尝试。[jonathandinu/face-parsing](https://huggingface.co/jonathandinu/face-parsing)。
+If you want to try this model capability online, you can try it on the right side of this interface. [jonathandinu/face-parsing](https://huggingface.co/jonathandinu/face-parsing).
 
 
-#### 配置 webpack ,忽略一些 node 模块
-(下文是 transformers.js 文档提供的参考）
+#### Configure webpack and ignore some node modules
+(The following is a reference provided in the transformers.js document)
 ```js
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    // (Optional) Export as a static site
-    // See https://nextjs.org/docs/pages/building-your-application/deploying/static-exports#configuration
-    output: 'export', // Feel free to modify/remove this option
+// (Optional) Export as a static site
+// See  https://nextjs.org/docs/pages/building-your-application/deploying/static-exports#configuration
+output: 'export', // Feel free to modify/remove this option
 
-    // Override the default webpack configuration
-    webpack: (config) => {
-        // See https://webpack.js.org/configuration/resolve/#resolvealias
-        config.resolve.alias = {
-            ...config.resolve.alias,
-            "sharp$": false,
-            "onnxruntime-node$": false,
-        }
-        return config;
-    },
+// Override the default webpack configuration
+webpack: (config) => {
+// See  https://webpack.js.org/configuration/resolve/#resolvealias
+config.resolve.alias = {
+...config.resolve.alias,
+"sharp$": false,
+"onnxruntime-node$": false,
+}
+return config;
+},
 }
 
 module.exports = nextConfig
 ```
 
-#### 将模型的加载放置在 worker 中
-由于模型比较大，在加载的过程中，会导致项目卡住，非常影响使用体验。放在 worker 中，等到ready 以后，再更新状态，会更合适。
+#### Place the loading of the model in the worker
+Due to the large size of the model, it can cause the project to get stuck during loading, greatly affecting the user experience. It would be more appropriate to place it in the worker and update the status after it is ready.
 
 ```js
 useEffect(() => {
-    if (!worker.current) {
-      // Create the worker if it does not yet exist.
-      worker.current = new Worker(new URL('./worker.js', import.meta.url), {
-        type: 'module'
-      });
-    }
+if (! worker.current) {
+// Create the worker if it does not yet exist.
+worker.current = new Worker(new URL('./worker.js', import.meta.url), {
+type: 'module'
+});
+}
 
-    // Create a callback function for messages from the worker thread.
-    const onMessageReceived = (e) => { /* TODO: See below */};
+// Create a callback function for messages from the worker thread.
+const onMessageReceived = (e) => { /* TODO: See below */};
 
-    // Attach the callback function as an event listener.
-    worker.current.addEventListener('message', onMessageReceived);
+// Attach the callback function as an event listener.
+worker.current.addEventListener('message', onMessageReceived);
 
-    // Define a cleanup function for when the component is unmounted.
-    return () => worker.current.removeEventListener('message', onMessageReceived);
-  });
+// Define a cleanup function for when the component is unmounted.
+return () => worker.current.removeEventListener('message', onMessageReceived);
+});
 ```
 
-### 如何进行上色
-有了上面的模型，就可以在图片中找到头发和嘴唇的位置了，那么如何进行上色呢？
+### How to apply color
+With the above model, you can find the position of hair and lips in the picture. So how do you proceed with coloring?
 
-如果只是单纯的将选中的颜色设置上去，那么就会变成这样子。
-
-
+If we simply set the selected color, it will become like this.
 
 
-这应该不是我们想要的效果，我们想要的应该仅仅修改颜色，但是“人物外貌”保持原状。
 
-#### 关于颜色的表示
-表示颜色的方法有很多种，开发最常用的有 RGBA 和 HEX（十六进制表示）。
+
+This should not be the effect we want, we only want to modify the color, but keep the "character appearance" in its original state.
+
+#### Regarding the representation of colors
+There are many ways to represent colors, and the most commonly used for development are RGBA and HEX (hexadecimal representation).
 
 #### RGBA
-RGBA 的原理就是三种[“原色”](https://en.wikipedia.org/wiki/Primary_color)（红色、黄色和蓝色）可以混合出其他想要的颜色。所以只需要控制三种颜色的比例，就可以表示其他的颜色了。
+The principle of RGBA is three [primary colors]（ https://en.wikipedia.org/wiki/Primary_color ）(Red, yellow, and blue) can be mixed to create other desired colors. So all you need to do is control the proportion of the three colors to represent the other colors.
 
-`RGBA 表示` 就是一个颜色，拆分成`红绿蓝`三个通道，再加上一个透明度通道。通过这四个通道来表示一个颜色。
-比如 `rgb(15, 213, 133)`
+`RGBA represents a color, divided into three channels: red, green, and blue, plus a transparency channel. Represent a color through these four channels.
+For example, ` RGB (15, 213, 133)`
 
-#### HEX（十六进制表示）
-十六进制格式是另一种表示 RGB 颜色的方式，RGBA 通道的值范围是 0-255（位深为8的情况下），hex 就是用16进制来表示通道值。两个表示一个通道值。如果是表示 rgb 就是6位；如果要表示透明通道， 就是8位。比如`rgb(255, 255, 255)`将是`#ffffff`
+#### HEX (hexadecimal representation)
+The hexadecimal format is another way to represent RGB colors. The value range of the RGBA channel is 0-255 (in the case of a bit depth of 8), and hex represents the channel value in hexadecimal. Two represents a channel value. If it means RGB is 6 bits; If you want to represent a transparent channel, it is 8 bits. For example, 'rgb (255, 255, 255)' would be '# ffffff'`
 
 #### HSL
-除了上面提到的两种颜色表示方法。其实理解起来更友好的是 HSL 的表示方式。`hsl(180, 50%, 50%)`, 它根据色调、饱和度和亮度来定义颜色:
-- Hue(色度、色向、色调）: 指整体颜色。例如，红色、橙色、黄色、绿色、蓝色和紫色。（色调范围从 0 到 360）;
-- Saturation( 饱和度):描述颜色的鲜艳程度或强度。低饱和度的颜色会显得灰暗或褪色，而高饱和度的颜色会显得强烈和丰富多彩。（饱和度范围从 0% 到 100%）;
-- Lightness(亮度):描述颜色的明暗程度。黑色的亮度非常低。白色的亮度非常高。（亮度范围从 0% 到 100%）;
+In addition to the two color representation methods mentioned above. In fact, a more user-friendly way to understand it is the representation of HSL` HSL (180, 50%, 50%) `, which defines colors based on hue, saturation, and brightness:
+-Hue (chromaticity, direction, tone): Refers to the overall color. For example, red, orange, yellow, green, blue, and purple. (Tone range from 0 to 360);
+-Saturation: describes the brightness or intensity of a color. Low saturation colors may appear dull or faded, while high saturation colors may appear strong and colorful. (saturation range from 0% to 100%);
+-Brightness: describes the degree of brightness of a color. The brightness of black is very low. The brightness of white is very high. (Brightness range from 0% to 100%);
 
-用这种格式表示颜色，我们在修改的时候，仅仅改变色调，而不要改变亮度和饱和度。就可以实现在修改颜色的同时，保持图片的原来效果了。
+When using this format to represent colors, we only change the color tone when making modifications, without changing brightness and saturation. It is possible to maintain the original effect of the image while modifying the color.
 
 ```js
 export function changeHue(rgb: [number, number, number], newHue: number): [number, number, number] {
-    const hsl = rgbToHsl(rgb[0], rgb[1], rgb[2]);
-    hsl[0] = newHue; // 改变色调
-    return hslToRgb(hsl[0], hsl[1], hsl[2]);
+const hsl = rgbToHsl(rgb[0], rgb[1], rgb[2]);
+hsl[0] = newHue; //  Change color tone
+return hslToRgb(hsl[0], hsl[1], hsl[2]);
 }
 
 ```
 
 
-### 如何进行图片像素级的替换
-这里可以参考作者的另一个 blog ,写的比较详细了，这里不再进行赘述。
-[ web 图像处理 - 从零实现一个照片编辑器](https://juejin.cn/post/7235294096951902266)
+## Reference
+[transformers.js](https://huggingface.co/docs/transformers.js/tutorials/next )
 
-## 参考
-[transformers.js ](https://huggingface.co/docs/transformers.js/tutorials/next)
+[Xenova/face-parsing]( https://huggingface.co/Xenova/face-parsing )
 
-[Xenova/face-parsing](https://huggingface.co/Xenova/face-parsing)
-
-[hsl-a-color-format-for-humans](https://cloudfour.com/thinks/hsl-a-color-format-for-humans/)
-
-
+[hsl-a-color-format-for-humans]( https://cloudfour.com/thinks/hsl-a-color-format-for-humans/ )
