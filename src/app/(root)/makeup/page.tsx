@@ -167,13 +167,13 @@ export default function Home() {
         console.error('canvasRef', canvasRef.current, 'resultData', resultData, 'width', width, 'height', height, 'url', url);
         return;
       }
+      console.time('render');
 
       const ctx = canvasRef.current?.getContext('2d', { willReadFrequently: true });
       if (!ctx) {
         console.error('ctx', ctx);
         return
       }
-      // const maxSize = 
       canvasRef.current.style.width = `${width > height ? CANVAS_STYLE : CANVAS_STYLE * (width / height)}px`;
       canvasRef.current.style.height = `${height > width ? CANVAS_STYLE : CANVAS_STYLE * (width / height)}px`
       canvasRef.current.width = width;
@@ -218,6 +218,7 @@ export default function Home() {
         }
       }
       ctx.putImageData(imageData, 0, 0);
+      console.timeEnd('render');
     })()
   }, [
     imageDataResult,

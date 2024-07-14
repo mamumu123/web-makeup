@@ -65,7 +65,12 @@ export function changeHue(rgb: [number, number, number], newHue: number): [numbe
     return hslToRgb(hsl[0], hsl[1], hsl[2]);
 }
 
+const colorMap = new Map();
+
 export function hexToHue(hex: string): number {
+    if (colorMap.has(hex)) {
+        return colorMap.get(hex);
+    }
     let r = parseInt(hex.slice(1, 3), 16);
     let g = parseInt(hex.slice(3, 5), 16);
     let b = parseInt(hex.slice(5, 7), 16);
@@ -82,5 +87,6 @@ export function hexToHue(hex: string): number {
     }
 
     hue /= 6;
+    colorMap.set(hex, hue * 360);
     return hue * 360; // return hue value in range [0, 360]
 }
