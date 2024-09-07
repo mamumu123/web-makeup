@@ -8,6 +8,11 @@
     "start": "next start",
     "lint": "next lint"
   },
+  "overrides": {
+    "sharp": {
+      "version": "none"
+    }
+  },
   "dependencies": {
     "@img-comparison-slider/react": "^8.0.2",
     "@radix-ui/react-checkbox": "^1.0.4",
