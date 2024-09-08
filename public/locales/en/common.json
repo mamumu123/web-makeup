@@ -17,6 +17,12 @@
         "table-modify": "Modifications",
         "table-op": "Operation Bar",
         "table-detail": "Operation details",
-        "table-custom": "Custom colors"
+        "table-custom": "Custom colors",
+        "bg": "background",
+        "bg-color": "bgColor",
+        "bg-init": "init",
+        "bg-setColor": "color",
+        "bg-opacity": "opacity",
+        "bg-img": "image"
     }
 }
