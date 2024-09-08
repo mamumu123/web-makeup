@@ -71,6 +71,7 @@ export default function Home() {
   useEffect(() => {
     if (result) {
       const format = formatData(result);
+      // console.log('format', format)
       // @ts-ignore
       setUserLoaderData((pre) => ({
         ...pre,
@@ -233,11 +234,16 @@ export default function Home() {
     colorLip, bgTypeLip,
   ]);
 
+  // const xxxx = async () => {
+  //   const url = 'http://localhost:3000/_next/image?url=%2Fexamples/e.png&w=1920&q=75';
+  //   classify(url);
+  // }
+
   return (
     <div className={`flex h-full width-full  flex-col`}>
       <div className='font-bold text-4xl text-center text-black h-[50px]'>{t('title')}</div>
       <h2 className="mb-4 text-center  h-[20px]">{t('desc')}</h2>
-
+      {/* <Button onClick={xxxx}>click</Button> */}
       <div className='flex-1 flex p-[6px] relative width-full justify-between gap-10 overflow-auto'>
         <Card className='flex-1 flex-col p-[6px] relative flex'>
           <div className={' h-[400px] w-full relative flex justify-center items-center'}>

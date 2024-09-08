@@ -56,9 +56,6 @@ export function formatData(data: ImageSegmentationPipelineOutput[]) {
 
     const temp1 = data.filter((it) => NEED_KEY.includes(it.label));
 
-    // for(let index = 0; index<)
-
-
     const temp2 = temp1.reduce((sum, it) => ({ ...sum, [it.label]: it.mask.data }), {})
 
     // @ts-ignore
@@ -85,11 +82,12 @@ export function formatData(data: ImageSegmentationPipelineOutput[]) {
         }
     }
 
-    // const backgroundData = findBorder(background, width, height)
+    const backgroundData = findBorder(background, width, height);
+    backgroundData.sort((a, b) => a - b)
     return {
         lipData,
         hairData,
-        // backgroundData,
+        backgroundData,
     }
 }
 
