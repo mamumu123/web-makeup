@@ -83,7 +83,6 @@ export default function Home() {
   }, [result]);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const canvasInitRef = useRef<HTMLCanvasElement>(null);
 
   const [demoIndex, setDemoIndex] = useState(0);
 
@@ -172,7 +171,6 @@ export default function Home() {
 
       if (!canvasRef.current || !resultData
         || !width || !height || !url
-        || !canvasInitRef.current
       ) {
         console.error('canvasRef', canvasRef.current, 'resultData', resultData, 'width', width, 'height', height, 'url', url);
         return;
@@ -180,8 +178,7 @@ export default function Home() {
       console.time('render');
 
       const ctx = canvasRef.current?.getContext('2d', { willReadFrequently: true });
-      const ctxInit = canvasInitRef.current?.getContext('2d', { willReadFrequently: true });
-      if (!ctx || !ctxInit) {
+      if (!ctx) {
         console.error('ctx', ctx);
         return
       }
@@ -195,12 +192,6 @@ export default function Home() {
       ctx.drawImage(imageElement, 0, 0, width, height);
       let imageData = ctx.getImageData(0, 0, width, height);
 
-      canvasInitRef.current.style.width = styleW;
-      canvasInitRef.current.style.height = styleH;
-      canvasInitRef.current.width = width;
-      canvasInitRef.current.height = height;
-      ctxInit.drawImage(imageElement, 0, 0, width, height);
-      let imageDataInit = ctxInit.getImageData(0, 0, width, height);
 
       if (bgTypeHair === BG_TYPE.ONE) {
         const color = colorHair;
@@ -261,17 +252,14 @@ export default function Home() {
       if (bgType === BG_TYPE.IMAGE && bgRefs.current?.[bgIndex]) {
         // 画背景
         ctx.drawImage(bgRefs.current?.[bgIndex], 0, 0, width, height);
-        imageData = ctx.getImageData(0, 0, width, height);
+        const bgImageData = ctx.getImageData(0, 0, width, height);
 
         const data: number[] = resultData.background;
         for (let index of data) {
-          imageDataInit.data[index * 4 + 0] = imageData.data[index * 4 + 0]
-          imageDataInit.data[index * 4 + 1] = imageData.data[index * 4 + 1]
-          imageDataInit.data[index * 4 + 2] = imageData.data[index * 4 + 2]
+          imageData.data[index * 4 + 0] = bgImageData.data[index * 4 + 0]
+          imageData.data[index * 4 + 1] = bgImageData.data[index * 4 + 1]
+          imageData.data[index * 4 + 2] = bgImageData.data[index * 4 + 2]
         }
-        ctx.putImageData(imageDataInit, 0, 0);
-        console.timeEnd('render');
-        return;
       }
       ctx.putImageData(imageData, 0, 0);
       console.timeEnd('render');
@@ -297,7 +285,6 @@ export default function Home() {
         <Card className='flex-1 flex-col p-[6px] relative flex'>
           <div className={' h-[400px] w-full relative flex justify-center items-center'}>
             <canvas width={CANVAS_STYLE} height={CANVAS_STYLE} ref={canvasRef} className={'w-[400px] h-[400px]'}></canvas>
-            <canvas width={CANVAS_STYLE} height={CANVAS_STYLE} ref={canvasInitRef} className={'w-[400px] h-[400px] hidden absolute'}></canvas>
             {loading && <div className={'absolute top-0 left-0 flex flex-col bg-[#000000dd] items-center justify-center w-full h-full'}>
               <Spinner aria-label="Default status example" size={'xl'} />
               <div className={'mt-2 text-lg'}>{t('dealing')}</div>
