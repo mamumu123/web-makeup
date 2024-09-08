@@ -4,9 +4,9 @@ import { Button, Card, Label, Spinner } from 'flowbite-react';
 import { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import Image from "next/image";
 import { Input } from "@/components/ui/input";
-import { BG_TYPE, CANVAS_STYLE, EXAMPLES, EXAMPLE_SECOND } from '@/constants';
+import { BG_IMAGE, BG_TYPE, CANVAS_STYLE, EXAMPLES, EXAMPLE_SECOND } from '@/constants';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Table } from "flowbite-react";
+import { Table, Tabs } from "flowbite-react";
 import { changeHue, hexToHue } from '@/utils/color';
 import { cn } from '@/lib/utils';
 import { formatData } from '@/utils/format';
@@ -158,6 +158,13 @@ export default function Home() {
   const [bgTypeLip, setBgTypeLip] = useState(BG_TYPE.OPACITY);
   const [colorLip, setColorLip] = useState('#FFFFFF');
 
+  const [bgType, setBgType] = useState(BG_TYPE.INIT);
+  const [color, setColor] = useState('#FFFFFF');
+  const [bgIndex, setBgIndex] = useState(0);
+  const bgRefs = useRef<any[]>([]);
+
+  console.log('bgType', bgType, 'color', color, 'bgIndex', bgIndex)
+
   useEffect(() => {
 
     (async () => {
@@ -269,84 +276,161 @@ export default function Home() {
         </Card>
 
         <div className='flex-1 rounded-md overflow-y-auto'>
-          <Table>
-            <Table.Head>
-              <Table.HeadCell>{t('table-modify')}</Table.HeadCell>
-              <Table.HeadCell>{t('table-op')}</Table.HeadCell>
-              <Table.HeadCell>{t('table-detail')}</Table.HeadCell>
-              <Table.HeadCell>{t('table-custom')}</Table.HeadCell>
-            </Table.Head>
-            <Table.Body className="divide-y">
-              <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-800">
-                <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                  {t('hair-color')}
-                </Table.Cell>
-                <Table.Cell>
-                  <RadioGroup value={bgTypeHair} onValueChange={(it: BG_TYPE) => setBgTypeHair(it)}>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="opacity" id="opacity" />
-                      <Label htmlFor="opacity">{t('default-color')}</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="one" id="one" />
-                      <Label htmlFor="one">{t('custom-color')}</Label>
-                    </div>
-                  </RadioGroup>
-                </Table.Cell>
-                <Table.Cell className={'flex-1'}>
-                  <div className={'overflow-x-auto flex items-center flex-wrap flex-1'}>
-                    {HAIR_DATA.slice(0, 40).map((item) => (
-                      <Button key={item}
-                        disabled={bgTypeHair !== BG_TYPE.ONE}
-                        size={'xs'}
-                        onClick={() => setColorHair(item)}
-                        style={{ backgroundColor: item }} >{item}</Button>
-                    ))}
+          <Tabs aria-label="Default tabs">
+            <Tabs.Item active title="Hair/Lip">
+              <Table>
+                <Table.Head>
+                  <Table.HeadCell>{t('table-modify')}</Table.HeadCell>
+                  <Table.HeadCell>{t('table-op')}</Table.HeadCell>
+                  <Table.HeadCell>{t('table-detail')}</Table.HeadCell>
+                  <Table.HeadCell>{t('table-custom')}</Table.HeadCell>
+                </Table.Head>
+                <Table.Body className="divide-y">
+                  <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-800">
+                    <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                      {t('hair-color')}
+                    </Table.Cell>
+                    <Table.Cell>
+                      <RadioGroup value={bgTypeHair} onValueChange={(it: BG_TYPE) => setBgTypeHair(it)}>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="opacity" id="opacity" />
+                          <Label htmlFor="opacity">{t('default-color')}</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="one" id="one" />
+                          <Label htmlFor="one">{t('custom-color')}</Label>
+                        </div>
+                      </RadioGroup>
+                    </Table.Cell>
+                    <Table.Cell className={'flex-1'}>
+                      <div className={'overflow-x-auto flex items-center flex-wrap flex-1'}>
+                        {HAIR_DATA.slice(0, 40).map((item) => (
+                          <Button key={item}
+                            disabled={bgTypeHair !== BG_TYPE.ONE}
+                            size={'xs'}
+                            onClick={() => setColorHair(item)}
+                            style={{ backgroundColor: item }} >{item}</Button>
+                        ))}
+                      </div>
+                    </Table.Cell>
+                    <Table.Cell>
+                      <div className={'flex flex-col justify-around  items-center'}>
+                        <Label htmlFor="colorHair" className={'text-nowrap'}>{colorHair}</Label>
+                        <input className='width-[50px]' disabled={bgTypeHair !== BG_TYPE.ONE} value={colorHair} onChange={(event) => setColorHair(event.target.value)} type="color" />
+                      </div>
+                    </Table.Cell>
+                  </Table.Row>
+                  <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-800">
+                    <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                      {t('lip-color')}
+                    </Table.Cell>
+                    <Table.Cell>
+                      <RadioGroup value={bgTypeLip} onValueChange={(value: BG_TYPE) => setBgTypeLip(value)}>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="opacity" id="opacity" />
+                          <Label htmlFor="opacity">{t('default-color')}</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="one" id="one" />
+                          <Label htmlFor="one">{t('custom-color')}</Label>
+                        </div>
+                      </RadioGroup>
+                    </Table.Cell>
+                    <Table.Cell className={'flex-1'}>
+                      <div className={'overflow-x-auto flex items-center flex-wrap flex-1'}>
+                        {LIP_DATA.map((item) => (
+                          <Button key={item.color}
+                            size={'xs'}
+                            disabled={bgTypeLip !== BG_TYPE.ONE}
+                            onClick={() => setColorLip(item.color)}
+                            style={{ backgroundColor: item.color }} >{item.color}</Button>
+                        ))}
+                      </div>
+                    </Table.Cell>
+                    <Table.Cell>
+                      <div className={'flex flex-col justify-center items-center '}>
+                        <Label htmlFor="color-lip" className={'text-nowrap'}>{colorLip}</Label>
+                        <input className='width-[50px]' disabled={bgTypeLip !== BG_TYPE.ONE} value={colorLip} onChange={(event) => setColorLip(event.target.value)} type="color" id='color-lip' />
+                      </div>
+                    </Table.Cell>
+                  </Table.Row>
+                </Table.Body>
+              </Table>
+            </Tabs.Item>
+            <Tabs.Item active title="Background">
+              <Table>
+                <Table.Head>
+                  <Table.HeadCell>{t('table-op')}</Table.HeadCell>
+                  <Table.HeadCell>{t('table-detail')}</Table.HeadCell>
+                  <Table.HeadCell>{t('table-custom')}</Table.HeadCell>
+                </Table.Head>
+                <Table.Body className="divide-y">
+                  <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-800">
+                    <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                      {t('bg-color')}
+                    </Table.Cell>
+                    <Table.Cell>
+                      <div >
+                        <RadioGroup value={bgType} onValueChange={(value: BG_TYPE) => setBgType(value)}>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value={BG_TYPE.INIT} id={BG_TYPE.INIT} />
+                            <Label htmlFor={BG_TYPE.INIT}>{t('bg-init')}</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value={BG_TYPE.ONE} id={BG_TYPE.ONE} />
+                            <Label htmlFor={BG_TYPE.ONE}>{t('bg-setColor')}</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value={BG_TYPE.OPACITY} id={BG_TYPE.OPACITY} />
+                            <Label htmlFor={BG_TYPE.OPACITY}>{t('bg-opacity')}</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value={BG_TYPE.IMAGE} id={BG_TYPE.IMAGE} />
+                            <Label htmlFor={BG_TYPE.IMAGE}>{t('bg-img')}</Label>
+                          </div>
+                        </RadioGroup>
+                      </div >
+                    </Table.Cell>
+                    <Table.Cell>
+                      <div className={'flex items-center'}>
+                        {/* {
+                          bgType === BG_TYPE.ONE && ( */}
+                        <div className={'w-[100px] flex justify-around items-center'}>
+                          <Input disabled={bgType !== BG_TYPE.ONE} value={color} onChange={(event) => setColor(event.target.value)} type="color"></Input>
+                        </div>
+                        {/* )
+                        } */}
+
+                      </div>
+                    </Table.Cell>
+
+                  </Table.Row>
+                </Table.Body>
+              </Table>
+              {/* {
+                bgType === BG_TYPE.IMAGE && ( */}
+              <div className={'bg-white flex flex-1 items-center gap-5'}>
+                {BG_IMAGE.map((it, index) => (
+                  <div
+                    key={it.url}
+                    onClick={() => setBgIndex(index)}
+                    className={cn('w-[100px] h-[100px] relative border-[5px] rounded-md', bgIndex === index ? 'border-teal-300' : '')}>
+                    <Image
+                      src={it.url}
+                      // @ts-ignore
+                      ref={el => bgRefs.current[index] = el}
+                      style={{ objectFit: 'contain', fill: 'contain' }}
+                      sizes="100%"
+                      fill alt='bg' />
                   </div>
-                </Table.Cell>
-                <Table.Cell>
-                  <div className={'flex flex-col justify-around  items-center'}>
-                    <Label htmlFor="colorHair" className={'text-nowrap'}>{colorHair}</Label>
-                    <input className='width-[50px]' disabled={bgTypeHair !== BG_TYPE.ONE} value={colorHair} onChange={(event) => setColorHair(event.target.value)} type="color" />
-                  </div>
-                </Table.Cell>
-              </Table.Row>
-              <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-800">
-                <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                  {t('lip-color')}
-                </Table.Cell>
-                <Table.Cell>
-                  <RadioGroup value={bgTypeLip} onValueChange={(value: BG_TYPE) => setBgTypeLip(value)}>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="opacity" id="opacity" />
-                      <Label htmlFor="opacity">{t('default-color')}</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="one" id="one" />
-                      <Label htmlFor="one">{t('custom-color')}</Label>
-                    </div>
-                  </RadioGroup>
-                </Table.Cell>
-                <Table.Cell className={'flex-1'}>
-                  <div className={'overflow-x-auto flex items-center flex-wrap flex-1'}>
-                    {LIP_DATA.map((item) => (
-                      <Button key={item.color}
-                        size={'xs'}
-                        disabled={bgTypeLip !== BG_TYPE.ONE}
-                        onClick={() => setColorLip(item.color)}
-                        style={{ backgroundColor: item.color }} >{item.color}</Button>
-                    ))}
-                  </div>
-                </Table.Cell>
-                <Table.Cell>
-                  <div className={'flex flex-col justify-center items-center '}>
-                    <Label htmlFor="color-lip" className={'text-nowrap'}>{colorLip}</Label>
-                    <input className='width-[50px]' disabled={bgTypeLip !== BG_TYPE.ONE} value={colorLip} onChange={(event) => setColorLip(event.target.value)} type="color" id='color-lip' />
-                  </div>
-                </Table.Cell>
-              </Table.Row>
-            </Table.Body>
-          </Table>
+                ))}
+              </div>
+              {/* )} */}
+            </Tabs.Item>
+
+          </Tabs>
+
+
         </div>
       </div>
     </div >
