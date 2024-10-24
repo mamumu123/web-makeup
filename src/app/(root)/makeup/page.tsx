@@ -230,14 +230,14 @@ export default function Home() {
       }
 
       if (bgType === BG_TYPE.OPACITY) {
-        const data: number[] = resultData.background;
+        const data: number[] = resultData.backgroundData;
         for (let index of data) {
           imageData.data[index * 4 + 3] = 0;
         }
       }
 
       if (bgType === BG_TYPE.ONE) {
-        const data: number[] = resultData.background;
+        const data: number[] = resultData.backgroundData;
         for (let index of data) {
           const r = parseInt(color.slice(1, 3), 16);
           const g = parseInt(color.slice(3, 5), 16);
@@ -254,7 +254,7 @@ export default function Home() {
         ctx.drawImage(bgRefs.current?.[bgIndex], 0, 0, width, height);
         const bgImageData = ctx.getImageData(0, 0, width, height);
 
-        const data: number[] = resultData.background;
+        const data: number[] = resultData.backgroundData;
         for (let index of data) {
           imageData.data[index * 4 + 0] = bgImageData.data[index * 4 + 0]
           imageData.data[index * 4 + 1] = bgImageData.data[index * 4 + 1]
